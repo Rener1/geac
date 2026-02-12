@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
@@ -33,15 +34,16 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        if(this.role == Role.PROFESSOR) return List.of(new SimpleGrantedAuthority("ROLE_PROFESSOR"), new SimpleGrantedAuthority("ROLE_STUDENT"));
+        else return List.of(new SimpleGrantedAuthority("ROLE_STUDENT"));
     }
     @Override
     public @Nullable String getPassword() {
-        return "";
+        return password;
     }
     @Override
     public String getUsername() {
-        return name;
+        return email;
     }
     @Override
     public boolean isAccountNonExpired() {
