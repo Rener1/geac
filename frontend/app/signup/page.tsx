@@ -2,13 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { authService } from "@/services/authService";
+import { registerAction } from "@/app/actions/auth";
 import { SignUpData } from "@/types/auth";
 import { LoadingButton } from "@/components/LoadingButton";
 
 export default function SignUpPage() {
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,19 +27,15 @@ export default function SignUpPage() {
     }));
   };
 
-  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
-    try {
-      await authService.register(formData);
-      alert("Conta criada com sucesso!");
-      router.push("/");
-    } catch (error) {
-      console.error("Erro no cadastro:", error);
-      setError((error as Error)?.message || "Ocorreu um erro inesperado.");
-    } finally {
+    const result = await registerAction(formData);
+
+    if (result?.error) {
+      setError(result.error);
       setIsLoading(false);
     }
   };
@@ -141,7 +135,7 @@ export default function SignUpPage() {
             <LoadingButton
               type="submit"
               isLoading={isLoading}
-              loadingText="Registrando..."
+              loadingText="Criando conta..."
               className="w-full mt-6"
             >
               Registrar

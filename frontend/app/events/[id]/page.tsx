@@ -1,8 +1,6 @@
-"use client";
-
-import { mockEvents } from "@/data/mockData";
+import { eventService } from "@/services/eventService";
 import Link from "next/link";
-import { notFound, useParams } from "next/navigation";
+import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   Calendar,
@@ -13,10 +11,7 @@ import {
   CheckCircle,
   Tag,
 } from "lucide-react";
-
-const handleNotImplemented = () => {
-  alert("Funcionalidade de (des)inscrição ainda não implementada.");
-};
+import { EventRegistrationButton } from "@/components/events/EventRegistrationButton";
 
 const getCategoryColor = (category: string) => {
   switch (category) {
@@ -39,13 +34,18 @@ const getCategoryColor = (category: string) => {
   }
 };
 
-export default function EventDetails() {
-  const params = useParams();
-  const id = typeof params.id === "string" ? params.id : params.id?.[0];
+export default async function EventDetails({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  let event;
 
-  const event = mockEvents.find((e) => e.id === id);
-
-  if (!event) {
+  try {
+    event = await eventService.getEventById(id);
+  } catch (error) {
+    console.error(error);
     return notFound();
   }
 
@@ -243,21 +243,10 @@ export default function EventDetails() {
 
               <hr className="my-6 border-zinc-200 dark:border-zinc-800" />
 
-              {event.isRegistered ? (
-                <button
-                  onClick={handleNotImplemented}
-                  className="w-full py-3 px-4 bg-white dark:bg-zinc-900 text-red-600 border border-zinc-200 dark:border-zinc-700 font-medium rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
-                >
-                  Cancelar Inscrição
-                </button>
-              ) : (
-                <button
-                  onClick={handleNotImplemented}
-                  className="w-full py-3 px-4 bg-zinc-900 dark:bg-white text-white dark:text-black font-medium rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors shadow-lg shadow-zinc-900/10"
-                >
-                  Inscrever-se no Evento
-                </button>
-              )}
+              <EventRegistrationButton
+                eventId={event.id}
+                isRegistered={event.isRegistered}
+              />
             </div>
           </div>
         </div>
