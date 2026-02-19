@@ -14,8 +14,15 @@ public record EventResponseDTO(
     Integer maxCapacity,
     String status,
     LocalDateTime createdAt,
+
     Integer categoryId,
-    Integer locationId,
+    String categoryName,
+
+    LocationResponseDTO location,
+
     String organizerName,
-    String organizerEmail
+    String organizerEmail,
+
+    Integer requirementId,
+    String requirementDescription
 ) {}

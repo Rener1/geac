@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -19,12 +22,13 @@ public class Event {
     @JoinColumn(name = "organizer_id", nullable = false)
     private User organizer;
 
-    // TODO: Implement Category and Location entities and relationships
-    @Column(name = "category_id", nullable = false)
-    private Integer categoryId;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
-    @Column(name = "location_id")
-    private Integer locationId;
+    @ManyToOne
+    @JoinColumn(name = "location_id")
+    private Location location;
 
     @Column(length = 200, nullable = false)
     private String title;
@@ -52,4 +56,16 @@ public class Event {
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "requirement_id", nullable = false)
+    private EventRequirement requirement;
+
+    @ManyToMany
+    @JoinTable(
+            name = "event_tags",
+            joinColumns = @JoinColumn(name = "event_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags = new HashSet<>();
 }

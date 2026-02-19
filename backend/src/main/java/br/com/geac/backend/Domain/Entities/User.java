@@ -1,6 +1,5 @@
 package br.com.geac.backend.Domain.Entities;
 
-
 import br.com.geac.backend.Domain.Enums.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -23,13 +22,21 @@ public class User implements UserDetails {
 
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
+
+    @Column(length = 100, nullable = false, unique = true)
     private String email;
+
+    @Column(name = "full_name", length = 150, nullable = false)
     private String name;
+
     @Column(name = "password_hash",nullable = false)
     private String password;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "user_type",nullable = false)
     private Role role;
-    @Column(updatable = false)
+
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime created_at = LocalDateTime.now();
 
     @Override
@@ -37,14 +44,17 @@ public class User implements UserDetails {
         if(this.role == Role.PROFESSOR) return List.of(new SimpleGrantedAuthority("ROLE_PROFESSOR"), new SimpleGrantedAuthority("ROLE_STUDENT"));
         else return List.of(new SimpleGrantedAuthority("ROLE_STUDENT"));
     }
+
     @Override
     public @Nullable String getPassword() {
         return password;
     }
+
     @Override
     public String getUsername() {
         return email;
     }
+
     @Override
     public boolean isAccountNonExpired() {
         return UserDetails.super.isAccountNonExpired();

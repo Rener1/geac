@@ -26,7 +26,7 @@ public class EventController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<List<EventResponseDTO>> getAllEvents() {
         List<EventResponseDTO> events = eventService.getAllEvents();
         return ResponseEntity.ok(events);
