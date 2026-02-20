@@ -42,12 +42,23 @@ export function Navbar() {
                 >
                   Eventos
                 </Link>
+
                 <Link
                   href="/meus-eventos"
                   className="text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-500 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
                   Meus Eventos
                 </Link>
+
+                {user?.role === "PROFESSOR" && (
+                  <Link
+                    href="/events/new"
+                    className="text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-500 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  >
+                    Criar Evento
+                  </Link>
+                )}
+
                 <Link
                   href="/certificados"
                   className="text-zinc-900 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-500 px-3 py-2 rounded-md text-sm font-medium transition-colors"

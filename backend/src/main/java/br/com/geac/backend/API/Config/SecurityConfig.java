@@ -32,6 +32,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/auth/**").permitAll()
                     .requestMatchers(HttpMethod.GET, "/events/**").authenticated()
                     .requestMatchers(HttpMethod.POST, "/events").hasRole("PROFESSOR")
+                    .requestMatchers(HttpMethod.GET, "/categories", "/locations", "/requirements").authenticated()
                     .anyRequest().authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout((logout) -> logout

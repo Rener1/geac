@@ -4,6 +4,41 @@ import { mockEvents } from "@/data/mockData";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
+/**
+ * Mapeia o DTO retornado pelo backend para o tipo Event do frontend.
+ * Campos que o backend não possui recebem valores padrão.
+ */
+function mapBackendToEvent(dto: any): Event {
+  // Extrai a data (YYYY-MM-DD) do startTime (ex: "2026-03-15T14:00:00")
+  const startDate = dto.startTime ? dto.startTime.split("T")[0] : "";
+  const startHour = dto.startTime ? dto.startTime.split("T")[1]?.substring(0, 5) : "";
+  const endHour = dto.endTime ? dto.endTime.split("T")[1]?.substring(0, 5) : "";
+
+  return {
+    id: String(dto.id),
+    title: dto.title ?? "",
+    description: dto.description ?? "",
+    category: (dto.categoryName?.toLowerCase() || "outro") as Event["category"],
+    date: startDate,
+    startTime: startHour,
+    endTime: endHour,
+    location: dto.onlineLink ? "Evento Online" : (dto.location?.name ?? "Local Indefinido"),
+    campus: (dto.location?.city?.toLowerCase() || "ondina") as Event["campus"],
+    speakers: [],
+    capacity: dto.maxCapacity ?? 0,
+    registered: 0,
+    requirements: [],
+    organizer: dto.organizerName ?? "",
+    organizerType: "Professor",
+    tags: [],
+    isRegistered: false,
+  };
+}
+
+/**
+ * Serviço server-only — usar apenas em Server Components e Route Handlers.
+ * Para funções client-side, use eventService.client.ts
+ */
 export const eventService = {
   getAllEvents: async (): Promise<Event[]> => {
     const cookieStore = await cookies();
@@ -15,17 +50,16 @@ export const eventService = {
         "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
       },
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
 
     if (!res.ok) {
-      // TODO retornar mock de eventos até que o backend esteja funcionando
       console.warn("Falha ao buscar eventos. Retornando dados mockados.");
       return mockEvents;
-      throw new Error("Falha ao buscar eventos");
     }
 
-    return res.json();
+    const data: any[] = await res.json();
+    return data.map(mapBackendToEvent);
   },
 
   getEventById: async (id: string): Promise<Event> => {
@@ -38,10 +72,10 @@ export const eventService = {
         "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
       },
+      cache: "no-store",
     });
 
     if (!res.ok) {
-      // TODO retornar mock de eventos até que o backend esteja funcionando
       const mockEvent = mockEvents.find((event) => event.id === id);
       if (mockEvent) {
         console.warn(`Falha ao buscar evento ${id}. Retornando dados mockados.`);
@@ -50,6 +84,7 @@ export const eventService = {
       throw new Error("Evento não encontrado");
     }
 
-    return res.json();
+    const data = await res.json();
+    return mapBackendToEvent(data);
   },
 };

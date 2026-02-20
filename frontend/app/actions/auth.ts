@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { SignInData, AuthResponse, SignUpData } from "@/types/auth";
 import { redirect } from "next/navigation";
+import { EventRequestDTO } from "@/types/event";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
