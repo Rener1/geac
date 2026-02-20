@@ -6,6 +6,7 @@ import br.com.geac.backend.Aplication.Mappers.EventMapperr;
 import br.com.geac.backend.Aplication.Mappers.LocationMapper;
 import br.com.geac.backend.Domain.Entities.*;
 import br.com.geac.backend.Repositories.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +26,7 @@ public class EventService {
     private final CategoryRepository categoryRepository;
     private final EventRequirementRepository eventRequirementRepository;
     private final EventMapperr eventMapperr;
+    private final TagRepository tagRepository;
     // private final UserRepository userRepository;
 
     @Transactional
@@ -60,11 +62,12 @@ public class EventService {
         event.setCategory(category);
         event.setLocation(location);
         event.setRequirement(requirement);
-
+        event.setTags(resolveTags(dto.tags()));
         Event saved = eventRepository.save(event);
 
         return eventMapperr.toResponseDTO(saved);
     }
+
 
     @Transactional(readOnly = true)
     public List<EventResponseDTO> getAllEvents() {
@@ -79,9 +82,10 @@ public class EventService {
         return eventMapperr.toResponseDTO(event);
     }
 
-    protected List<String> map(Set<Tag> tags) {
-        if (tags == null) return List.of();
-        return tags.stream().map(Tag::getName).toList();
+
+    private Set<Tag> resolveTags(Set<Integer> ids) {
+        if (ids == null || ids.isEmpty()) return Set.of();
+        return tagRepository.findAllByIdIn(ids);
     }
 
     protected List<String> resolveSpeakers(Event event) {
