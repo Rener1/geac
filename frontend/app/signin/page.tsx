@@ -16,13 +16,17 @@ export default function SignInPage() {
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // ✅ MELHORIA: Limpa erro quando usuário digita
+    if (error) {
+      setError(null);
+    }
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.SubmitEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(null);
+    setError(null); // ✅ Limpa erro antes de nova tentativa
 
     const result = await loginAction(formData);
 
@@ -30,6 +34,7 @@ export default function SignInPage() {
       setError(result.error);
       setIsLoading(false);
     }
+    // ✅ Se sucesso, redirect acontece automaticamente
   };
 
   return (
@@ -45,8 +50,12 @@ export default function SignInPage() {
             </p>
           </div>
 
+          {/* ✅ MELHORIA: Erro com animação suave */}
           {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm text-center">
+            <div 
+              className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm text-center animate-in fade-in slide-in-from-top-2 duration-300"
+              role="alert"
+            >
               {error}
             </div>
           )}
@@ -68,6 +77,7 @@ export default function SignInPage() {
                 onChange={handleChange}
                 placeholder="seu@email.com"
                 disabled={isLoading}
+                autoComplete="email"
                 className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
               />
             </div>
@@ -88,6 +98,7 @@ export default function SignInPage() {
                 onChange={handleChange}
                 placeholder="••••••••"
                 disabled={isLoading}
+                autoComplete="current-password"
                 className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
               />
             </div>
