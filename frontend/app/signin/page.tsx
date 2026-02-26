@@ -42,24 +42,23 @@ export default function SignInPage() {
 
       // ✅ SOLUÇÃO: Atualiza o contexto ANTES de redirecionar
       login(); // Força o AuthContext a revalidar
-      
+
       // Pequeno delay para garantir que o contexto atualizou
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // Agora sim, redireciona
       router.push("/");
       router.refresh();
-      
     } catch (error) {
       // redirect() do Next.js joga um erro especial
-      if (error && typeof error === 'object' && 'digest' in error) {
+      if (error && typeof error === "object" && "digest" in error) {
         // É o erro do redirect - força atualização do contexto
         login();
         return;
       }
-      
-      console.error('Erro no login:', error);
-      setError('Erro inesperado ao fazer login');
+
+      console.error("Erro no login:", error);
+      setError("Erro inesperado ao fazer login");
       setIsLoading(false);
     }
   };
@@ -78,7 +77,7 @@ export default function SignInPage() {
           </div>
 
           {error && (
-            <div 
+            <div
               className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm text-center animate-in fade-in slide-in-from-top-2 duration-300"
               role="alert"
             >

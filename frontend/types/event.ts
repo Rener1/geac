@@ -49,7 +49,7 @@ export interface EventRequestDTO {
   workloadHours: number;
   maxCapacity: number;
   onlineLink?: string;
-  tags:number[]
+  tags: number[];
 }
 
 export interface LocationResponseDTO {

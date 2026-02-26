@@ -7,16 +7,34 @@ import { usePathname } from "next/navigation";
 
 // ✅ CONFIGURAÇÃO CENTRALIZADA - Mude aqui para adicionar/remover itens
 const NAV_CONFIG = {
-  public: [
-    { href: "/", label: "Início", icon: "🏠" },
-  ],
+  public: [{ href: "/", label: "Início", icon: "🏠" }],
   authenticated: [
-    { href: "/events", label: "Eventos", icon: "📅", roles: ["STUDENT", "PROFESSOR"] },
-    { href: "/meus-eventos", label: "Meus Eventos", icon: "⭐", roles: ["STUDENT", "PROFESSOR"] },
-    { href: "/certificados", label: "Certificados", icon: "🎓", roles: ["STUDENT", "PROFESSOR"] },
+    {
+      href: "/events",
+      label: "Eventos",
+      icon: "📅",
+      roles: ["STUDENT", "PROFESSOR"],
+    },
+    {
+      href: "/meus-eventos",
+      label: "Meus Eventos",
+      icon: "⭐",
+      roles: ["STUDENT", "PROFESSOR"],
+    },
+    {
+      href: "/certificados",
+      label: "Certificados",
+      icon: "🎓",
+      roles: ["STUDENT", "PROFESSOR"],
+    },
   ],
   professorOnly: [
-    { href: "/events/new", label: "Criar Evento", icon: "➕", roles: ["PROFESSOR"] },
+    {
+      href: "/events/new",
+      label: "Criar Evento",
+      icon: "➕",
+      roles: ["PROFESSOR"],
+    },
   ],
 };
 
@@ -37,7 +55,10 @@ export function Navbar() {
   // Fecha dropdown ao clicar fora
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
         setIsProfileOpen(false);
       }
     };
@@ -69,12 +90,11 @@ export function Navbar() {
     }
 
     const baseItems = NAV_CONFIG.authenticated.filter(
-      item => !item.roles || item.roles.includes(user?.role || "")
+      (item) => !item.roles || item.roles.includes(user?.role || ""),
     );
 
-    const professorItems = user?.role === "PROFESSOR" 
-      ? NAV_CONFIG.professorOnly 
-      : [];
+    const professorItems =
+      user?.role === "PROFESSOR" ? NAV_CONFIG.professorOnly : [];
 
     return [...baseItems, ...professorItems];
   };
@@ -93,7 +113,10 @@ export function Navbar() {
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Link
+              href="/"
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+            >
               <span className="text-2xl font-bold text-blue-600 dark:text-blue-500">
                 GEAC
               </span>
@@ -149,7 +172,12 @@ export function Navbar() {
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </button>
 
@@ -161,34 +189,44 @@ export function Navbar() {
                           Informações do Perfil
                         </p>
                       </div>
-                      
+
                       <div className="px-4 py-3 space-y-2">
                         <div>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400">Nome</p>
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                            Nome
+                          </p>
                           <p className="text-sm font-medium text-zinc-900 dark:text-white">
                             {user?.name || "Não informado"}
                           </p>
                         </div>
-                        
+
                         <div>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400">Email</p>
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                            Email
+                          </p>
                           <p className="text-sm font-medium text-zinc-900 dark:text-white">
                             {user?.email || "Não informado"}
                           </p>
                         </div>
-                        
+
                         <div>
-                          <p className="text-xs text-zinc-500 dark:text-zinc-400">Tipo de Conta</p>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            user?.role === "PROFESSOR" 
-                              ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-                              : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                          }`}>
-                            {user?.role === "PROFESSOR" ? "👨‍🏫 Professor" : "🎓 Estudante"}
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                            Tipo de Conta
+                          </p>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              user?.role === "PROFESSOR"
+                                ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                                : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                            }`}
+                          >
+                            {user?.role === "PROFESSOR"
+                              ? "👨‍🏫 Professor"
+                              : "🎓 Estudante"}
                           </span>
                         </div>
                       </div>
-                      
+
                       <div className="border-t border-zinc-200 dark:border-zinc-700 mt-2 pt-2 px-2">
                         {/*<Link
                           href="/perfil"
@@ -248,12 +286,32 @@ export function Navbar() {
                   aria-label="Menu"
                 >
                   {isMobileMenuOpen ? (
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   ) : (
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 6h16M4 12h16M4 18h16"
+                      />
                     </svg>
                   )}
                 </button>
@@ -324,9 +382,24 @@ export function Navbar() {
             >
               {isLoggingOut ? (
                 <>
-                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  <svg
+                    className="animate-spin h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
                   </svg>
                   <span>Saindo...</span>
                 </>

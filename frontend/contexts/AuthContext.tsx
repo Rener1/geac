@@ -24,7 +24,7 @@ export function AuthProvider({
   const [user, setUser] = useState<UserData | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // ✅ MELHORIA 2: Refs para controlar cache
   const lastCheckRef = useRef<number>(0);
   const isCheckingRef = useRef<boolean>(false);
@@ -33,7 +33,7 @@ export function AuthProvider({
 
   const checkSession = useCallback(async (force = false) => {
     const now = Date.now();
-    
+
     // ✅ MELHORIA 3: Usar cache se requisição recente
     if (!force && now - lastCheckRef.current < SESSION_CACHE_TIME) {
       return; // Skip se checou nos últimos 5 min
@@ -69,14 +69,16 @@ export function AuthProvider({
   // ✅ MELHORIA 5: Checar apenas na montagem inicial
   useEffect(() => {
     checkSession(true); // Force no primeiro carregamento
-  }, []); // ❌ Removido pathname!
+  }, [checkSession]); // ❌ Removido pathname!
 
   // ✅ MELHORIA 6: Revalidar apenas em rotas específicas
   useEffect(() => {
     // Só revalida em rotas protegidas
-    const protectedRoutes = ['/events', '/certificados', '/meus-eventos'];
-    const isProtected = protectedRoutes.some(route => pathname.startsWith(route));
-    
+    const protectedRoutes = ["/events", "/certificados", "/meus-eventos"];
+    const isProtected = protectedRoutes.some((route) =>
+      pathname.startsWith(route),
+    );
+
     if (isProtected) {
       checkSession(); // Usa cache automático
     }

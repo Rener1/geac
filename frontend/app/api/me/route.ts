@@ -16,12 +16,12 @@ export async function GET() {
 
     // ✅ MELHORIA: Validar expiração do token
     const now = Math.floor(Date.now() / 1000); // Unix timestamp em segundos
-    
+
     if (decoded.exp && decoded.exp < now) {
       // Token expirado!
       return NextResponse.json(
-        { user: null, error: "Token expirado" }, 
-        { status: 401 }
+        { user: null, error: "Token expirado" },
+        { status: 401 },
       );
     }
 

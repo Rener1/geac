@@ -31,6 +31,6 @@ export async function getLocations() {
 export async function getRequirements() {
   return fetchDomain("/requirements");
 }
-export async function getTags(){
+export async function getTags() {
   return fetchDomain("/tags");
 }

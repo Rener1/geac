@@ -13,6 +13,10 @@ vi.mock("next/link", () => ({
   }) => <a href={href}>{children}</a>,
 }));
 
+vi.mock("next/navigation", () => ({
+  usePathname: vi.fn(() => "/"),
+}));
+
 const useAuthSpy = vi.spyOn(AuthContext, "useAuth");
 
 describe("Navbar Component", () => {
@@ -55,11 +59,18 @@ describe("Navbar Component", () => {
 
     expect(screen.getByText("Dev Teste")).toBeInTheDocument();
     expect(screen.getByText("Meus Eventos")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Sair" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /sair da conta/i }),
+    ).toBeInTheDocument();
   });
 
   it('deve chamar logout e mudar texto para "Saindo..." ao clicar em Sair', async () => {
-    const mockLogout = vi.fn().mockResolvedValue(true);
+    let resolveLogout: (value?: unknown) => void = () => {};
+    const mockLogout = vi.fn().mockImplementation(() => {
+      return new Promise((resolve) => {
+        resolveLogout = resolve;
+      });
+    });
 
     useAuthSpy.mockReturnValue({
       isAuthenticated: true,
@@ -72,31 +83,42 @@ describe("Navbar Component", () => {
 
     render(<Navbar />);
 
-    const logoutBtn = screen.getByRole("button", { name: "Sair" });
+    const logoutBtn = screen.getByRole("button", { name: /sair da conta/i });
     fireEvent.click(logoutBtn);
 
-    expect(screen.getByRole("button")).toHaveTextContent("Saindo...");
+    expect(logoutBtn).toHaveTextContent("Saindo...");
     expect(mockLogout).toHaveBeenCalled();
+
+    if (resolveLogout) {
+      resolveLogout();
+    }
   });
 
   it('deve resetar o estado de "Saindo..." quando a prop isAuthenticated mudar', async () => {
+    let resolveLogout: (value?: unknown) => void = () => {};
     useAuthSpy.mockReturnValue({
       isAuthenticated: true,
       //@ts-expect-error - id é opcional, mas para o teste precisamos
-      user: { id: "1", name: "User" },
-      logout: vi.fn(),
+      user: { id: "1", name: "User", role: "STUDENT" },
+      logout: vi.fn().mockImplementation(() => {
+        return new Promise((resolve) => {
+          resolveLogout = resolve;
+        });
+      }),
     });
 
     const { rerender } = render(<Navbar />);
 
-    const logoutBtn = screen.getByRole("button", { name: "Sair" });
+    const logoutBtn = screen.getByRole("button", { name: /sair da conta/i });
     fireEvent.click(logoutBtn);
-    expect(screen.getByRole("button")).toHaveTextContent("Saindo...");
 
-    //@ts-expect-error - AuthContextType tem mais propriedades, mas para o teste só precisamos dessas
+    expect(logoutBtn).toHaveTextContent("Saindo...");
+
+    //@ts-expect-error - id é opcional, mas para o teste precisamos
     useAuthSpy.mockReturnValue({
       isAuthenticated: false,
       user: null,
+      logout: vi.fn(),
     });
 
     rerender(<Navbar />);
@@ -104,11 +126,18 @@ describe("Navbar Component", () => {
     useAuthSpy.mockReturnValue({
       isAuthenticated: true,
       //@ts-expect-error - id é opcional, mas para o teste precisamos
-      user: { id: "1", name: "User" },
+      user: { id: "1", name: "User", role: "STUDENT" },
+      logout: vi.fn(),
     });
 
     rerender(<Navbar />);
 
-    expect(screen.getByRole("button")).toHaveTextContent("Sair");
+    expect(
+      screen.getByRole("button", { name: /sair da conta/i }),
+    ).toHaveTextContent("Sair");
+
+    if (resolveLogout) {
+      resolveLogout();
+    }
   });
 });

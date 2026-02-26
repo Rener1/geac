@@ -51,7 +51,6 @@ export default function CreateEventForm({
     }
   };
 
-
   const addTag = (id: string) => {
     if (!formData.tags.includes(id)) {
       setFormData({ ...formData, tags: [...formData.tags, id] });
@@ -66,9 +65,9 @@ export default function CreateEventForm({
   const removeAll = () => {
     setFormData({
       ...formData,
-      tags: []
-    })
-  }
+      tags: [],
+    });
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -88,7 +87,7 @@ export default function CreateEventForm({
         locationId: !formData.isOnline
           ? Number(formData.locationId)
           : undefined,
-        tags: formData.tags.map(Number)
+        tags: formData.tags.map(Number),
       };
 
       const result = await createEventAction(payload);
@@ -213,15 +212,20 @@ export default function CreateEventForm({
           <label className=" p-1 text-sm font-medium dark:text-gray-200">
             Tags do Evento
           </label>
-          <button type="button" onClick={removeAll} className="p-1 text-sm bg-blue-600 font-medium dark:text-gray-200 hover:bg-blue-700 text-white rounded font-medium disabled:opacity-50 transition-colors"> 
+          <button
+            type="button"
+            onClick={removeAll}
+            className="p-1 text-sm bg-blue-600 font-medium dark:text-gray-200 hover:bg-blue-700 text-white rounded font-medium disabled:opacity-50 transition-colors"
+          >
             Remover Todos
           </button>
         </div>
 
-
         <div className="flex flex-wrap gap-2 min-h-[40px] p-2 border-2 border-dashed rounded-lg border-zinc-200 dark:border-zinc-700">
           {formData.tags.length === 0 && (
-            <span className="text-sm text-gray-400">Nenhuma tag selecionada...</span>
+            <span className="text-sm text-gray-400">
+              Nenhuma tag selecionada...
+            </span>
           )}
           {formData.tags.map((tagId) => {
             const tagInfo = tags.find((t) => t.id.toString() === tagId);
@@ -272,7 +276,7 @@ export default function CreateEventForm({
         >
           Este evento será Online
         </label>
-      </div >
+      </div>
 
       {formData.isOnline ? (
         <div>
