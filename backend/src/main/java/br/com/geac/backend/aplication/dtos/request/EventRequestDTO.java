@@ -33,14 +33,14 @@ public record EventRequestDTO(
         @Min(value = 1, message = "A capacidade deve ser de no mínimo 1 pessoa")
         Integer maxCapacity,
 
-        @NotNull(message = "O ID da categoria é obrigatório") //TODO: somente 1 ou mais categorias? mandar id ou salvar caso nao esteja ?
+        @NotNull(message = "O ID da categoria é obrigatório") //somente 1 ou mais categorias? mandar id ou salvar caso nao esteja ?
         Integer categoryId,
 
-        @NotNull(message = "O requisito do evento é obrigatório") //TODO: aqui mandar uma lista, mas ver se será por id já existente ou criar
+        @NotNull(message = "O requisito do evento é obrigatório") //aqui mandar uma lista, mas ver se será por id já existente ou criar
         Integer requirementId,
 
         @NotNull
-        Set<Integer> tags, //TODO: mesma coisa dos de cima, mas já ta implementado pros 2 casos
+        Set<Integer> tags, //mesma coisa dos de cima, mas já ta implementado pros 2 casos
 
         @NotNull
         //pode ser nulo, pois o evento pode ser online

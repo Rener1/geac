@@ -1,7 +1,7 @@
 package br.com.geac.backend.domain.entities;
+import jakarta.persistence.*;
 
 import br.com.geac.backend.domain.enums.Role;
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.jspecify.annotations.Nullable;
@@ -20,7 +20,8 @@ import java.util.UUID;
 @Table(name = "users")
 public class User implements UserDetails {
 
-    @Id @GeneratedValue(strategy = GenerationType.AUTO)
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @Column(length = 100, nullable = false, unique = true)
@@ -29,19 +30,20 @@ public class User implements UserDetails {
     @Column(name = "full_name", length = 150, nullable = false)
     private String name;
 
-    @Column(name = "password_hash",nullable = false)
+    @Column(name = "password_hash", nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "user_type",nullable = false)
+    @Column(name = "user_type", nullable = false)
     private Role role;
 
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime created_at = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if(this.role == Role.PROFESSOR) return List.of(new SimpleGrantedAuthority("ROLE_PROFESSOR"), new SimpleGrantedAuthority("ROLE_STUDENT"));
+        if (this.role == Role.PROFESSOR)
+            return List.of(new SimpleGrantedAuthority("ROLE_PROFESSOR"), new SimpleGrantedAuthority("ROLE_STUDENT"));
         else return List.of(new SimpleGrantedAuthority("ROLE_STUDENT"));
     }
 

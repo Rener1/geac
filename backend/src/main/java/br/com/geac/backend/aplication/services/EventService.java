@@ -1,11 +1,12 @@
 package br.com.geac.backend.aplication.services;
 
+import br.com.geac.backend.domain.entities.*;
+import br.com.geac.backend.repositories.*;
 import br.com.geac.backend.aplication.dtos.request.EventRequestDTO;
 import br.com.geac.backend.aplication.dtos.reponse.EventResponseDTO;
 import br.com.geac.backend.aplication.mappers.EventMapperr;
-import br.com.geac.backend.domain.entities.*;
-import br.com.geac.backend.repositories.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -14,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class EventService {
@@ -24,7 +25,6 @@ public class EventService {
     private final EventRequirementRepository eventRequirementRepository;
     private final EventMapperr eventMapperr;
     private final TagRepository tagRepository;
-    // private final UserRepository userRepository;
 
     @Transactional
     public EventResponseDTO createEvent(EventRequestDTO dto) {
@@ -86,7 +86,8 @@ public class EventService {
     }
 
     protected List<String> resolveSpeakers(Event event) {
-        return List.of("Palestrante 1", "Palestrante 2"); //TODO: implementar no banco
+        log.info(event);
+        return List.of("Palestrante 1", "Palestrante 2"); // implementar no banco
     }
 
     protected List<String> resolveRequirementDescriptions(Event event) {
