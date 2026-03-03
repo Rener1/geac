@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: ["main"]
-    paths: ["backend/**"]
+    paths: ["backend/**"] 
   pull_request:
     types: [opened, synchronize, reopened]
     branches: ["main"]
@@ -30,13 +30,20 @@ jobs:
           java-version: "25"
           distribution: "temurin"
           cache: "maven" 
+          
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
 
       - name: Iniciar Base de Dados
         run: docker compose up -d
 
       - name: Aguardar Base de Dados
-        run: sleep 10 
-
+        run: sleep 10
+  
       - name: Dar permissão de execução para o Maven Wrapper
         run: chmod +x mvnw
 
@@ -44,12 +51,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-        run: >
-          ./mvnw -B clean verify
-          org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
-          -Dsonar.projectKey=geac-organization
-          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar -Dspring.profiles.active=test -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+      
       - name: Validar Relatório de Cobertura
         run: test -f target/site/jacoco/jacoco.xml
