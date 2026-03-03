@@ -104,11 +104,6 @@
                 <version>5.5.0.6356</version>
             </plugin>
             <plugin>
-                <groupId>org.sonarsource.scanner.maven</groupId>
-                <artifactId>sonar-maven-plugin</artifactId>
-                <version>5.5.0.6356</version>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
@@ -139,7 +134,7 @@
                         </goals>
                     </execution>
 
-                    <!-- Gera relatórios após os testes (inclui XML p/ SonarCloud) -->
+                    <!-- Gera relatório após os testes (inclui XML p/ SonarCloud) -->
                     <execution>
                         <id>report</id>
                         <phase>verify</phase>

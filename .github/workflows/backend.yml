@@ -6,6 +6,7 @@ on:
     branches: ["main"]
     paths: ["backend/**"] 
   pull_request:
+    types: [opened, synchronize, reopened]
     branches: ["main"]
     paths: ["backend/**"]
 
