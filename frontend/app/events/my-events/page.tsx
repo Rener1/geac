@@ -1,17 +1,22 @@
 import { eventService } from "@/services/eventService";
 import { EventCard } from "@/components/events/EventCard";
 import { RoleGuard } from "@/components/auth/RoleGuard";
-import { Event } from "@/types/event"; 
+import { Event } from "@/types/event";
 
 export default async function MyEventsPage() {
   let my_events: Event[] = []; 
-  let error = null;
+  let error: string | null = null;
 
   try {
     my_events = await eventService.getMyEvents();
-  } catch (err: any) {
+  } catch (err) {
     console.error("Erro na página meus eventos:", err);
-    error = err.message || "Erro desconhecido ao carregar eventos.";
+    
+    if (err instanceof Error) {
+      error = err.message;
+    } else {
+      error = "Erro desconhecido ao carregar eventos.";
+    }
   }
 
   return (
