@@ -28,8 +28,9 @@ public class SecurityConfig {
     private static final String EVENTS_ENDPOINT = "/events";
     private static final String CATEGORIES_ENDPOINT = "/categories";
     private static final String ORGANIZER_ENDPOINT = "/organizers/**";
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)  {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         return http
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
@@ -55,12 +56,12 @@ public class SecurityConfig {
 
                         //solicitacoes: usuario comum pode apenas CRIAR a solicitação
                         .requestMatchers(HttpMethod.POST, "/organizer-requests").authenticated()
-                        .requestMatchers(HttpMethod.GET, CATEGORIES_ENDPOINT, "/locations", "/requirements", "/organizers", "/organizers/**,","/views/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, CATEGORIES_ENDPOINT, "/locations", "/requirements", "/organizers", "/organizers/**,", "/views/**").authenticated()
 
                         //solicitações: ADMIN e organizer
-                        .requestMatchers(HttpMethod.POST, CATEGORIES_ENDPOINT,EVENTS_ENDPOINT,"/events/**")  .hasAnyRole(ADMIN,ORGANIZER)
-                        .requestMatchers(HttpMethod.PATCH, CATEGORIES_ENDPOINT,EVENTS_ENDPOINT) .hasAnyRole(ADMIN,ORGANIZER)
-                        .requestMatchers(HttpMethod.DELETE, CATEGORIES_ENDPOINT,EVENTS_ENDPOINT) .hasAnyRole(ADMIN,ORGANIZER)
+                        .requestMatchers(HttpMethod.POST, CATEGORIES_ENDPOINT, EVENTS_ENDPOINT, "/events/**").hasAnyRole(ADMIN, ORGANIZER)
+                        .requestMatchers(HttpMethod.PATCH, CATEGORIES_ENDPOINT, EVENTS_ENDPOINT).hasAnyRole(ADMIN, ORGANIZER)
+                        .requestMatchers(HttpMethod.DELETE, CATEGORIES_ENDPOINT, EVENTS_ENDPOINT).hasAnyRole(ADMIN, ORGANIZER)
                         .anyRequest().authenticated())
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout -> logout
@@ -73,7 +74,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)   {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) {
         return authenticationConfiguration.getAuthenticationManager();
     }
 

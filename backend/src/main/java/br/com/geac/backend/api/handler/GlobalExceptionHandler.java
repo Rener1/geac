@@ -71,7 +71,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Object> handleConflict(DataIntegrityViolationException e) {
+    public @Nullable ResponseEntity<Object> handleConflict(DataIntegrityViolationException e) {
         return new ResponseEntity<>(
                 ExceptionDetails.builder()
                         .title("Erro de integridade de dados")

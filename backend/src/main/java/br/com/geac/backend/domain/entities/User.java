@@ -38,7 +38,7 @@ public class User implements UserDetails {
     private Role role;
 
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime created_at = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

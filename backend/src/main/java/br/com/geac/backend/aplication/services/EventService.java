@@ -149,10 +149,7 @@ public class EventService {
         }
         if (dto.orgId() != null) {
             User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            List<String> authorites = List.of("ORGANIZER", "ADMIN");
-            if (user.getRole() == null || !authorites.contains(user.getRole().name())) { //nao necessário mas uma segurança  a mais
-                throw new AccessDeniedException("Apenas organizadores e administradores podem editar eventos.");
-            }
+
             var organization = organizerRepository.findById(dto.orgId()).orElseThrow(() -> new BadRequestException("O organizador com ID: " + dto.orgId() + "nao foi encontrado"));
             if (user.getRole() != Role.ADMIN && !organizerMemberRepository.existsByOrganizerIdAndUserId(organization.getId(), user.getId())) {
                 throw new BadRequestException("erro inesperado de validation em algum lugar pois não everia chegar aqui pelo fluxo normal");
@@ -162,11 +159,11 @@ public class EventService {
         String checkTitle = dto.title() != null ? dto.title() : event.getTitle();
         LocalDateTime checkStartTime = dto.startTime() != null ? dto.startTime() : event.getStartTime();
 
-        if (eventRepository.existsByTitleIgnoreCaseAndOrganizerIdAndStartTime(checkTitle, event.getOrganizer().getId(), checkStartTime)) {
-            if (!checkTitle.equalsIgnoreCase(event.getTitle()) || !checkStartTime.equals(event.getStartTime())) {
+        if (eventRepository.existsByTitleIgnoreCaseAndOrganizerIdAndStartTime(checkTitle, event.getOrganizer().getId(), checkStartTime) &&
+                (!checkTitle.equalsIgnoreCase(event.getTitle()) || !checkStartTime.equals(event.getStartTime()))) {
                 throw new EventAlreadyExistsException("Já existe outro evento com este título e horário nesta organização.");
             }
-        }
+
         return eventMapper.toResponseDTO(eventRepository.save(event), getUserRegistrationContext(event.getId()));
 
     }
@@ -183,7 +180,7 @@ public class EventService {
                 Registration reg = registrationOpt.get();
                 return new UserRegistrationContextResponseDTO(true, reg.getStatus(), reg.getAttended());
             }
-        } catch (ClassCastException e) {
+        } catch (ClassCastException _) {
             // Prevenção caso o principal não seja do tipo User
         }
         return new UserRegistrationContextResponseDTO(false, null, false);
