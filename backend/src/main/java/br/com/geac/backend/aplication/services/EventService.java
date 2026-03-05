@@ -248,7 +248,11 @@ public class EventService {
         return !now.isBefore(notificationTime.minusHours(1)) && !now.isAfter(notificationTime.plusHours(1));
     }
 
-    public List<Event> getPastEvents(LocalDateTime now) {
-        return eventRepository.findAllByStartTimeBeforeAndStatusNot(now.minusMinutes(1), EventStatus.COMPLETED);
+    @Transactional
+    public int updateEventStatus(LocalDateTime now) {
+        int pastEventsUpdated = eventRepository.markPastEventsAsCompleted(now.minusMinutes(1),EventStatus.COMPLETED);
+        int inProgressUpdatedEvents = eventRepository.updateEventsToInProgress(now,EventStatus.IN_PROGRESS);
+        int upcomingEvents = eventRepository.updateToUpcoming(now, now.plusDays(7),EventStatus.ACTIVE,EventStatus.UPCOMING);
+        return pastEventsUpdated + inProgressUpdatedEvents + upcomingEvents;
     }
 }

@@ -57,20 +57,9 @@ public class EventAlertScheduler {
         registrationService.saveAll(registrationsByEvent);
     }
 
-    @Scheduled(cron = "0 */30 * * * *")
-    public void updateEventStatus() {  //dava pra fazer direto nno banco mas deixa ai, n vai pesar acho
-
-        LocalDateTime now = LocalDateTime.now();
-        List<Event> endEvents = eventService.getPastEvents(now);
-
-        //todo:verificar finalizado ou inprogress
-        if (!endEvents.isEmpty()) {
-            endEvents.forEach(event -> event.setStatus(EventStatus.COMPLETED));
-            eventRepository.saveAll(endEvents);
-            log.info("Updated {} to completed status", endEvents.size());
-        } else {
-            log.info("No events found to update");
-        }
+    @Scheduled(cron = "0 */1 * * * *")
+    public void updateEventStatus() {
+        log.info("Total de eventos atualizados: {}", eventService.updateEventStatus(LocalDateTime.now()));
     }
 
 }
