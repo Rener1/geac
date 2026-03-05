@@ -15,6 +15,7 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.format.DateTimeFormatter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -30,6 +31,7 @@ public class CertificateService {
 
     private final CertificateRepository certificateRepository;
     private final RegistrationRepository registrationRepository;
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @Transactional
     public void issueCertificatesForEvent(UUID eventId) {
@@ -69,7 +71,7 @@ public class CertificateService {
         Certificate certificate = certificateRepository.findByUserIdAndEventId(userId, eventId)
                 .orElseThrow(() -> new CertificateNotAvailableException("Certificado não encontrado."));
 
-        try (InputStream templateStream = new ClassPathResource("templates/certificado_modelo.pdf").getInputStream();
+        try (InputStream templateStream = new ClassPathResource("templates/modelo_V3.pdf").getInputStream();
              PDDocument pdfDocument = PDDocument.load(templateStream)) {
 
             PDAcroForm acroForm = pdfDocument.getDocumentCatalog().getAcroForm();
@@ -78,6 +80,12 @@ public class CertificateService {
                 acroForm.getField("nome_aluno").setValue(certificate.getUser().getName());
                 acroForm.getField("nome_evento").setValue(certificate.getEvent().getTitle());
                 acroForm.getField("carga_horaria").setValue(certificate.getEvent().getWorkloadHours().toString());
+                acroForm.getField("local_evento").setValue(
+                        certificate.getEvent().getLocation().getName() + " - " + certificate.getEvent().getLocation().getCampus().getDescricao()
+                );
+                acroForm.getField("organizador").setValue((certificate.getEvent().getOrganizer().getName()));
+                acroForm.getField("data_inicio").setValue(certificate.getEvent().getStartTime().format(formatter));
+                acroForm.getField("data_fim").setValue(certificate.getEvent().getEndTime().format(formatter));
                 acroForm.flatten();
             }
 

@@ -62,8 +62,6 @@ export const eventService = {
 
     if (!res.ok) {
       throw new Error("Falha ao buscar eventos");
-      // console.warn("Falha ao buscar eventos. Retornando dados mockados.");
-      // return mockEvents;
     }
 
     const data = await res.json();
@@ -89,5 +87,30 @@ export const eventService = {
 
     const data = await res.json();
     return mapBackendToEvent(data);
+  },
+
+  getMyEvents: async (): Promise<Event[]> => {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("token")?.value;
+
+    if (!token) {
+      throw new Error("Não autorizado");
+    }
+
+    const res = await fetch(`${API_URL}/events/my-events`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Passando o Bearer token extraído do cookie
+      },
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      throw new Error("Falha ao buscar seus eventos");
+    }
+
+    const data = await res.json();
+    return data.map(mapBackendToEvent); // Usa o seu mapeador padrão para evitar quebras de layout
   },
 };

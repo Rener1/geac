@@ -6,7 +6,6 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { NotificationBell } from "./NotificationBell";
 
-// ✅ CONFIGURAÇÃO CENTRALIZADA - Mude aqui para adicionar/remover itens
 const NAV_CONFIG = {
   public: [{ href: "/", label: "Início", icon: "🏠" }],
   authenticated: [
@@ -17,7 +16,7 @@ const NAV_CONFIG = {
       roles: ["STUDENT", "PROFESSOR", "ORGANIZER"],
     },
     {
-      href: "/meus-eventos",
+      href: "events/my-events",
       label: "Meus Eventos",
       icon: "⭐",
       roles: ["STUDENT", "PROFESSOR", "ORGANIZER"],
@@ -137,7 +136,6 @@ export function Navbar() {
 
   const visibleItems = getVisibleItems();
 
-  // ✅ Verifica se link está ativo
   const isActiveLink = (href: string) => {
     if (href === "/") {
       return pathname === "/";
