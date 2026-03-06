@@ -3,20 +3,26 @@ package br.com.geac.backend.aplication.services;
 import br.com.geac.backend.domain.entities.Event;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Log4j2
 @Service
-@RequiredArgsConstructor
 public class EmailService {
 
     //@Value("${spring.mail.username}")
     private String remetente;
-    private final JavaMailSender mailSender;
+
+    @Autowired(required = false)
+    private JavaMailSender mailSender;
 
     public void sendAlert(String email, Event event) {
+        if (mailSender == null) {
+            log.warn("MailSender não configurado, email não enviado para: " + email);
+            return;
+        }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(remetente);
         message.setTo(email);

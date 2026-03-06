@@ -22,7 +22,7 @@ public class EventStatusConverter implements AttributeConverter<EventStatus, Str
         // Converte o valor do banco para maiúsculo antes de mapear
         try {
             return EventStatus.valueOf(dbData.toUpperCase());
-        } catch (IllegalArgumentException _) {
+        } catch (IllegalArgumentException e) {
             return null;
         }
     }
