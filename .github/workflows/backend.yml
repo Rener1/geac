@@ -42,7 +42,7 @@ jobs:
         run: docker compose up -d
 
       - name: Aguardar Base de Dados
-        run: sleep 10
+        run: sleep 30
   
       - name: Dar permissão de execução para o Maven Wrapper
         run: chmod +x mvnw
