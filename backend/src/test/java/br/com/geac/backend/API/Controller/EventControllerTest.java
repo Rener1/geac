@@ -1,10 +1,10 @@
-package br.com.geac.backend.API.Controller;
+package br.com.geac.backend.api.controller;
 
-import br.com.geac.backend.Aplication.DTOs.Reponse.EventResponseDTO;
-import br.com.geac.backend.Aplication.DTOs.Request.EventRequestDTO;
-import br.com.geac.backend.Aplication.Services.EventService;
-import br.com.geac.backend.Domain.Enums.DaysBeforeNotify;
-import br.com.geac.backend.Domain.Exceptions.EventNotFoundException;
+import br.com.geac.backend.aplication.dtos.response.EventResponseDTO;
+import br.com.geac.backend.aplication.dtos.request.EventRequestDTO;
+import br.com.geac.backend.aplication.services.EventService;
+import br.com.geac.backend.domain.enums.DaysBeforeNotify;
+import br.com.geac.backend.domain.exceptions.EventNotFoundException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +53,7 @@ class EventControllerTest {
 
         eventRequest = new EventRequestDTO(
                 "Palestra sobre IA",
-                "Descrição da palestra",
+                "DescriÃ§Ã£o da palestra",
                 null,
                 LocalDateTime.now().plusDays(1),
                 LocalDateTime.now().plusDays(1).plusHours(2),
@@ -71,7 +71,7 @@ class EventControllerTest {
         eventResponse = EventResponseDTO.builder()
                 .id(UUID.randomUUID())
                 .title("Palestra sobre IA")
-                .description("Descrição da palestra")
+                .description("DescriÃ§Ã£o da palestra")
                 .status("ACTIVE")
                 .categoryId(1)
                 .categoryName("Palestra")
@@ -102,7 +102,7 @@ class EventControllerTest {
     @WithMockUser(roles = "ORGANIZER")
     void createEvent_AccessDenied_Returns403() throws Exception {
         when(eventService.createEvent(any()))
-                .thenThrow(new br.com.geac.backend.Domain.Exceptions.BadRequestException("Apenas organizadores podem cadastrar eventos."));
+                .thenThrow(new br.com.geac.backend.domain.exceptions.BadRequestException("Apenas organizadores podem cadastrar eventos."));
 
         mockMvc.perform(post("/events/create")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -142,7 +142,7 @@ class EventControllerTest {
     }
 
     @Test
-@DisplayName("GET /events/{id} - Deve retornar 200 para ID inexistente retorna resposta do serviço")
+@DisplayName("GET /events/{id} - Deve retornar 200 para ID inexistente retorna resposta do serviÃ§o")
 void getEventById_NotFound_ReturnsServiceBehavior() throws Exception {
     UUID id = UUID.randomUUID();
     when(eventService.getEventById(id)).thenReturn(null);
@@ -166,7 +166,7 @@ void getEventById_NotFound_ReturnsServiceBehavior() throws Exception {
     @WithMockUser(roles = "ORGANIZER")
     void deleteEvent_AccessDenied_Returns403() throws Exception {
         UUID id = UUID.randomUUID();
-        doThrow(new br.com.geac.backend.Domain.Exceptions.BadRequestException("Sem permissão"))
+        doThrow(new br.com.geac.backend.domain.exceptions.BadRequestException("Sem permissÃ£o"))
                 .when(eventService).deleteEvent(id);
 
         mockMvc.perform(delete("/events/{id}", id))

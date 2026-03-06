@@ -1,11 +1,11 @@
-package br.com.geac.backend.Aplication.Services;
+package br.com.geac.backend.aplication.services;
 
-import br.com.geac.backend.Aplication.DTOs.Reponse.RequirementsResponseDTO;
-import br.com.geac.backend.Aplication.DTOs.Request.RequirementRequestDTO;
-import br.com.geac.backend.Aplication.Mappers.RequirementMapper;
-import br.com.geac.backend.Domain.Entities.EventRequirement;
-import br.com.geac.backend.Domain.Exceptions.RequirementNotFoundException;
-import br.com.geac.backend.Infrastructure.Repositories.EventRequirementRepository;
+import br.com.geac.backend.aplication.dtos.response.RequirementsResponseDTO;
+import br.com.geac.backend.aplication.dtos.request.RequirementRequestDTO;
+import br.com.geac.backend.aplication.mappers.RequirementMapper;
+import br.com.geac.backend.domain.entities.EventRequirement;
+import br.com.geac.backend.domain.exceptions.RequirementNotFoundException;
+import br.com.geac.backend.infrastucture.repositories.EventRequirementRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -70,7 +70,7 @@ class RequirementServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando requisito não encontrado")
+    @DisplayName("Deve lanÃ§ar exceÃ§Ã£o quando requisito nÃ£o encontrado")
     void getById_NotFound_ThrowsException() {
         when(repository.findById(99)).thenReturn(Optional.empty());
 
@@ -91,7 +91,7 @@ class RequirementServiceTest {
     }
 
     @Test
-    @DisplayName("Deve retornar lista vazia quando não há requisitos")
+    @DisplayName("Deve retornar lista vazia quando nÃ£o hÃ¡ requisitos")
     void getAll_EmptyList() {
         when(repository.findAll()).thenReturn(List.of());
 
@@ -101,16 +101,16 @@ class RequirementServiceTest {
     }
 
     @Test
-    @DisplayName("Deve atualizar requisito com sucesso quando description não é null")
+    @DisplayName("Deve atualizar requisito com sucesso quando description nÃ£o Ã© null")
     void updateRequirement_WithDescription_Success() {
-        RequirementRequestDTO updateRequest = new RequirementRequestDTO("Nova descrição do requisito");
+        RequirementRequestDTO updateRequest = new RequirementRequestDTO("Nova descriÃ§Ã£o do requisito");
         when(repository.findById(1)).thenReturn(Optional.of(requirement));
         when(mapper.toDTO(requirement)).thenReturn(requirementResponse);
 
         RequirementsResponseDTO result = requirementService.updateRequirement(1, updateRequest);
 
         assertThat(result).isNotNull();
-        assertThat(requirement.getDescription()).isEqualTo("Nova descrição do requisito");
+        assertThat(requirement.getDescription()).isEqualTo("Nova descriÃ§Ã£o do requisito");
     }
 
     @Test
@@ -126,7 +126,7 @@ class RequirementServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao atualizar requisito inexistente")
+    @DisplayName("Deve lanÃ§ar exceÃ§Ã£o ao atualizar requisito inexistente")
     void updateRequirement_NotFound_ThrowsException() {
         when(repository.findById(99)).thenReturn(Optional.empty());
 
@@ -145,7 +145,7 @@ class RequirementServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao deletar requisito inexistente")
+    @DisplayName("Deve lanÃ§ar exceÃ§Ã£o ao deletar requisito inexistente")
     void deleteRequirement_NotFound_ThrowsException() {
         when(repository.findById(99)).thenReturn(Optional.empty());
 

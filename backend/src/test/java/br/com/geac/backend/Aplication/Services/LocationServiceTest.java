@@ -1,14 +1,14 @@
-package br.com.geac.backend.Aplication.Services;
+package br.com.geac.backend.aplication.services;
 
-import br.com.geac.backend.Aplication.DTOs.Reponse.LocationResponseDTO;
-import br.com.geac.backend.Aplication.DTOs.Request.LocationPatchRequestDTO;
-import br.com.geac.backend.Aplication.DTOs.Request.LocationRequestDTO;
-import br.com.geac.backend.Aplication.Mappers.LocationMapper;
-import br.com.geac.backend.Domain.Entities.Location;
-import br.com.geac.backend.Domain.Enums.Campus;
-import br.com.geac.backend.Domain.Exceptions.LocationAlreadyExistsException;
-import br.com.geac.backend.Domain.Exceptions.LocationNotFoundException;
-import br.com.geac.backend.Infrastructure.Repositories.LocationRepository;
+import br.com.geac.backend.aplication.dtos.response.LocationResponseDTO;
+import br.com.geac.backend.aplication.dtos.request.LocationPatchRequestDTO;
+import br.com.geac.backend.aplication.dtos.request.LocationRequestDTO;
+import br.com.geac.backend.aplication.mappers.LocationMapper;
+import br.com.geac.backend.domain.entities.Location;
+import br.com.geac.backend.domain.enums.Campus;
+import br.com.geac.backend.domain.exceptions.LocationAlreadyExistsException;
+import br.com.geac.backend.domain.exceptions.LocationNotFoundException;
+import br.com.geac.backend.infrastucture.repositories.LocationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,25 +41,25 @@ class LocationServiceTest {
     void setUp() {
         location = new Location();
         location.setId(1);
-        location.setName("Auditório UFAPE");
+        location.setName("AuditÃ³rio UFAPE");
         location.setZipCode("55292-270");
         location.setNumber("S/N");
 
         locationResponse = new LocationResponseDTO(
-                1, "Auditório UFAPE", "Rua Principal", "S/N",
+                1, "AuditÃ³rio UFAPE", "Rua Principal", "S/N",
                 "Centro", "Garanhuns", "PE", "55292-270",
                 Campus.CAMPUS_CARUARU_CENTRAL, null, 200
         );
 
         locationRequest = new LocationRequestDTO(
-                "Auditório UFAPE", "Rua Principal", "S/N",
+                "AuditÃ³rio UFAPE", "Rua Principal", "S/N",
                 "Centro", "Garanhuns", "PE", "55292-270",
                 null, 200, Campus.CAMPUS_CARUARU_CENTRAL
         );
     }
 
     @Test
-    @DisplayName("Deve criar localização com sucesso")
+    @DisplayName("Deve criar localizaÃ§Ã£o com sucesso")
     void createLocation_Success() {
         when(locationRepository.existsByZipCodeAndNumberAndName(any(), any(), any())).thenReturn(false);
         when(locationMapper.toEntity(locationRequest)).thenReturn(location);
@@ -73,7 +73,7 @@ class LocationServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando localização já existe")
+    @DisplayName("Deve lanÃ§ar exceÃ§Ã£o quando localizaÃ§Ã£o jÃ¡ existe")
     void createLocation_AlreadyExists_ThrowsException() {
         when(locationRepository.existsByZipCodeAndNumberAndName(any(), any(), any())).thenReturn(true);
 
@@ -84,7 +84,7 @@ class LocationServiceTest {
     }
 
     @Test
-    @DisplayName("Deve retornar localização por ID")
+    @DisplayName("Deve retornar localizaÃ§Ã£o por ID")
     void getById_Success() {
         when(locationRepository.findById(1)).thenReturn(Optional.of(location));
         when(locationMapper.toDto(location)).thenReturn(locationResponse);
@@ -95,7 +95,7 @@ class LocationServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando localização não encontrada")
+    @DisplayName("Deve lanÃ§ar exceÃ§Ã£o quando localizaÃ§Ã£o nÃ£o encontrada")
     void getById_NotFound_ThrowsException() {
         when(locationRepository.findById(99)).thenReturn(Optional.empty());
 
@@ -104,7 +104,7 @@ class LocationServiceTest {
     }
 
     @Test
-    @DisplayName("Deve retornar todas as localizações")
+    @DisplayName("Deve retornar todas as localizaÃ§Ãµes")
     void getAll_Success() {
         when(locationRepository.findAll()).thenReturn(List.of(location));
         when(locationMapper.toDto(location)).thenReturn(locationResponse);
@@ -115,7 +115,7 @@ class LocationServiceTest {
     }
 
     @Test
-    @DisplayName("Deve retornar lista vazia quando não há localizações")
+    @DisplayName("Deve retornar lista vazia quando nÃ£o hÃ¡ localizaÃ§Ãµes")
     void getAll_EmptyList() {
         when(locationRepository.findAll()).thenReturn(List.of());
 
@@ -125,7 +125,7 @@ class LocationServiceTest {
     }
 
     @Test
-    @DisplayName("Deve atualizar localização com sucesso")
+    @DisplayName("Deve atualizar localizaÃ§Ã£o com sucesso")
     void updateLocation_Success() {
         LocationPatchRequestDTO patchDTO = new LocationPatchRequestDTO(
                 "Novo Nome", null, null, null, null, null, null, null, null, null
@@ -143,7 +143,7 @@ class LocationServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao atualizar com nome duplicado")
+    @DisplayName("Deve lanÃ§ar exceÃ§Ã£o ao atualizar com nome duplicado")
     void updateLocation_DuplicateName_ThrowsException() {
         LocationPatchRequestDTO patchDTO = new LocationPatchRequestDTO(
                 "Outro Local", null, null, null, null, null, null, null, null, null
@@ -157,7 +157,7 @@ class LocationServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao atualizar localização inexistente")
+    @DisplayName("Deve lanÃ§ar exceÃ§Ã£o ao atualizar localizaÃ§Ã£o inexistente")
     void updateLocation_NotFound_ThrowsException() {
         when(locationRepository.findById(99)).thenReturn(Optional.empty());
 
@@ -167,7 +167,7 @@ class LocationServiceTest {
     }
 
     @Test
-    @DisplayName("Deve deletar localização com sucesso")
+    @DisplayName("Deve deletar localizaÃ§Ã£o com sucesso")
     void deleteLocation_Success() {
         when(locationRepository.findById(1)).thenReturn(Optional.of(location));
 
@@ -178,7 +178,7 @@ class LocationServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao deletar localização inexistente")
+    @DisplayName("Deve lanÃ§ar exceÃ§Ã£o ao deletar localizaÃ§Ã£o inexistente")
     void deleteLocation_NotFound_ThrowsException() {
         when(locationRepository.findById(99)).thenReturn(Optional.empty());
 

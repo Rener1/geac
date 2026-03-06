@@ -1,11 +1,11 @@
-package br.com.geac.backend.API.Controller;
+package br.com.geac.backend.api.controller;
 
-import br.com.geac.backend.Aplication.DTOs.Reponse.AuthResponseDTO;
-import br.com.geac.backend.Aplication.DTOs.Reponse.RegisterResponseDTO;
-import br.com.geac.backend.Aplication.DTOs.Request.AuthRequestDTO;
-import br.com.geac.backend.Aplication.DTOs.Request.RegisterRequestDTO;
-import br.com.geac.backend.Aplication.Services.AuthService;
-import br.com.geac.backend.Domain.Exceptions.EmailAlreadyExistsException;
+import br.com.geac.backend.aplication.dtos.response.AuthResponseDTO;
+import br.com.geac.backend.aplication.dtos.response.RegisterResponseDTO;
+import br.com.geac.backend.aplication.dtos.request.AuthRequestDTO;
+import br.com.geac.backend.aplication.dtos.request.RegisterRequestDTO;
+import br.com.geac.backend.aplication.services.AuthService;
+import br.com.geac.backend.domain.exceptions.EmailAlreadyExistsException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,7 +43,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("POST /auth/register - Deve retornar 201 ao registrar usuário")
+    @DisplayName("POST /auth/register - Deve retornar 201 ao registrar usuÃ¡rio")
     void register_Success_Returns201() throws Exception {
         RegisterRequestDTO request = new RegisterRequestDTO(
                 "Douglas Henrique", "douglas@email.com", "senha123", "ORGANIZER"
@@ -62,13 +62,13 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("POST /auth/register - Deve retornar 409 quando email já existe")
+    @DisplayName("POST /auth/register - Deve retornar 409 quando email jÃ¡ existe")
     void register_EmailAlreadyExists_Returns409() throws Exception {
         RegisterRequestDTO request = new RegisterRequestDTO(
                 "Douglas", "douglas@email.com", "senha123", "STUDENT"
         );
         when(authService.registerUser(any()))
-                .thenThrow(new EmailAlreadyExistsException("O Email já está em uso"));
+                .thenThrow(new EmailAlreadyExistsException("O Email jÃ¡ estÃ¡ em uso"));
 
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -77,7 +77,7 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("POST /auth/register - Deve retornar 400 quando dados inválidos")
+    @DisplayName("POST /auth/register - Deve retornar 400 quando dados invÃ¡lidos")
     void register_InvalidData_Returns400() throws Exception {
         RegisterRequestDTO request = new RegisterRequestDTO("", "", "123", "");
 
@@ -102,11 +102,11 @@ class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("POST /auth/login - Deve retornar 401 com credenciais inválidas")
+    @DisplayName("POST /auth/login - Deve retornar 401 com credenciais invÃ¡lidas")
     void login_InvalidCredentials_Returns401() throws Exception {
         AuthRequestDTO request = new AuthRequestDTO("douglas@email.com", "senhaErrada");
         when(authService.login(any()))
-                .thenThrow(new BadCredentialsException("Credenciais inválidas"));
+                .thenThrow(new BadCredentialsException("Credenciais invÃ¡lidas"));
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

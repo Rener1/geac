@@ -1,11 +1,11 @@
-package br.com.geac.backend.Aplication.Services;
+package br.com.geac.backend.aplication.services;
 
-import br.com.geac.backend.Aplication.DTOs.Reponse.CategoryResponseDTO;
-import br.com.geac.backend.Aplication.DTOs.Request.CategoryPatchRequestDTO;
-import br.com.geac.backend.Aplication.DTOs.Request.CategoryRequestDTO;
-import br.com.geac.backend.Aplication.Mappers.CategoryMapper;
-import br.com.geac.backend.Domain.Entities.Category;
-import br.com.geac.backend.Infrastructure.Repositories.CategoryRepository;
+import br.com.geac.backend.aplication.dtos.response.CategoryResponseDTO;
+import br.com.geac.backend.aplication.dtos.request.CategoryPatchRequestDTO;
+import br.com.geac.backend.aplication.dtos.request.CategoryRequestDTO;
+import br.com.geac.backend.aplication.mappers.CategoryMapper;
+import br.com.geac.backend.domain.entities.Category;
+import br.com.geac.backend.infrastucture.repositories.CategoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,8 +40,8 @@ class CategoryServiceTest {
         category.setId(1);
         category.setName("Palestra");
 
-        categoryResponse = new CategoryResponseDTO(1, "Palestra", "Descrição da palestra");
-        categoryRequest = new CategoryRequestDTO("Palestra", "Descrição da palestra com mais detalhes aqui");
+        categoryResponse = new CategoryResponseDTO(1, "Palestra", "DescriÃ§Ã£o da palestra");
+        categoryRequest = new CategoryRequestDTO("Palestra", "DescriÃ§Ã£o da palestra com mais detalhes aqui");
     }
 
     @Test
@@ -71,7 +71,7 @@ class CategoryServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando categoria não encontrada")
+    @DisplayName("Deve lanÃ§ar exceÃ§Ã£o quando categoria nÃ£o encontrada")
     void getCategoryById_NotFound_ThrowsException() {
         when(repository.findById(99)).thenReturn(Optional.empty());
 
@@ -92,7 +92,7 @@ class CategoryServiceTest {
     }
 
     @Test
-    @DisplayName("Deve retornar lista vazia quando não há categorias")
+    @DisplayName("Deve retornar lista vazia quando nÃ£o hÃ¡ categorias")
     void getAllCategory_EmptyList() {
         when(repository.findAll()).thenReturn(List.of());
 
@@ -104,10 +104,10 @@ class CategoryServiceTest {
     @Test
     @DisplayName("Deve atualizar categoria com sucesso")
     void updateCategory_Success() {
-        CategoryPatchRequestDTO patchDTO = new CategoryPatchRequestDTO("Workshop", "Descrição do workshop atualizada aqui");
+        CategoryPatchRequestDTO patchDTO = new CategoryPatchRequestDTO("Workshop", "DescriÃ§Ã£o do workshop atualizada aqui");
         when(repository.findById(1)).thenReturn(Optional.of(category));
         when(repository.save(category)).thenReturn(category);
-        when(mapper.toResponse(category)).thenReturn(new CategoryResponseDTO(1, "Workshop", "Descrição"));
+        when(mapper.toResponse(category)).thenReturn(new CategoryResponseDTO(1, "Workshop", "DescriÃ§Ã£o"));
 
         CategoryResponseDTO result = categoryService.updateCategory(1, patchDTO);
 
@@ -117,11 +117,11 @@ class CategoryServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao atualizar categoria inexistente")
+    @DisplayName("Deve lanÃ§ar exceÃ§Ã£o ao atualizar categoria inexistente")
     void updateCategory_NotFound_ThrowsException() {
         when(repository.findById(99)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> categoryService.updateCategory(99, new CategoryPatchRequestDTO("x", "descrição longa aqui mesmo")))
+        assertThatThrownBy(() -> categoryService.updateCategory(99, new CategoryPatchRequestDTO("x", "descriÃ§Ã£o longa aqui mesmo")))
                 .isInstanceOf(RuntimeException.class);
     }
 
@@ -136,7 +136,7 @@ class CategoryServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao deletar categoria inexistente")
+    @DisplayName("Deve lanÃ§ar exceÃ§Ã£o ao deletar categoria inexistente")
     void deleteCategory_NotFound_ThrowsException() {
         when(repository.findById(99)).thenReturn(Optional.empty());
 

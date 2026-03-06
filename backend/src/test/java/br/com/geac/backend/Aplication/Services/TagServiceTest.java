@@ -1,11 +1,11 @@
-package br.com.geac.backend.Aplication.Services;
+package br.com.geac.backend.aplication.services;
 
-import br.com.geac.backend.Aplication.DTOs.Reponse.TagResponseDTO;
-import br.com.geac.backend.Aplication.DTOs.Request.TagRequestDTO;
-import br.com.geac.backend.Aplication.Mappers.TagMapper;
-import br.com.geac.backend.Domain.Entities.Tag;
-import br.com.geac.backend.Domain.Exceptions.TagNotFoundException;
-import br.com.geac.backend.Infrastructure.Repositories.TagRepository;
+import br.com.geac.backend.aplication.dtos.response.TagResponseDTO;
+import br.com.geac.backend.aplication.dtos.request.TagRequestDTO;
+import br.com.geac.backend.aplication.mappers.TagMapper;
+import br.com.geac.backend.domain.entities.Tag;
+import br.com.geac.backend.domain.exceptions.TagNotFoundException;
+import br.com.geac.backend.infrastucture.repositories.TagRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -71,7 +71,7 @@ class TagServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando tag não encontrada")
+    @DisplayName("Deve lanÃ§ar exceÃ§Ã£o quando tag nÃ£o encontrada")
     void getById_NotFound_ThrowsException() {
         when(tagRepository.findById(99)).thenReturn(Optional.empty());
 
@@ -92,7 +92,7 @@ class TagServiceTest {
     }
 
     @Test
-    @DisplayName("Deve retornar lista vazia quando não há tags")
+    @DisplayName("Deve retornar lista vazia quando nÃ£o hÃ¡ tags")
     void getAll_EmptyList() {
         when(tagRepository.findAll()).thenReturn(List.of());
 
@@ -116,7 +116,7 @@ class TagServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao atualizar tag inexistente")
+    @DisplayName("Deve lanÃ§ar exceÃ§Ã£o ao atualizar tag inexistente")
     void updateTag_NotFound_ThrowsException() {
         when(tagRepository.findById(99)).thenReturn(Optional.empty());
 
@@ -135,7 +135,7 @@ class TagServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao deletar tag inexistente")
+    @DisplayName("Deve lanÃ§ar exceÃ§Ã£o ao deletar tag inexistente")
     void deleteTag_NotFound_ThrowsException() {
         when(tagRepository.findById(99)).thenReturn(Optional.empty());
 
