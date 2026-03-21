@@ -1,0 +1,61 @@
+services:
+  geac-postgres:
+    container_name: geac-postgres-bd
+    image: postgres:18.1
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./backend/docker-database-initial.sql:/docker-entrypoint-initdb.d/docker-database-initial.sql
+      - geac-postgres-data:/var/lib/postgresql
+    networks:
+      - geac-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    container_name: geac-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:postgresql://geac-postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+    depends_on:
+      geac-postgres:
+        condition: service_healthy
+    networks:
+      - geac-network
+
+  frontend:
+    container_name: geac-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8080
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+      API_URL_INTERNAL: http://backend:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - geac-network
+
+volumes:
+  geac-postgres-data:
+
+networks:
+  geac-network:
+    driver: bridge
