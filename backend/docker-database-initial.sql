@@ -214,6 +214,13 @@ GROUP BY o.id, o.name;
 
 
 -- POVOAMENTO
+--
+-- CONTAS INICIAIS DISPONIVEIS NO BANCO:
+-- - admin@geac.com (ADMIN)
+-- - admin@admin.com (ADMIN)
+-- - student1@test.com a student5@test.com (STUDENT)
+-- - professor1@test.com a professor3@test.com (PROFESSOR)
+-- - organizer1@test.com (ORGANIZER)
 
 INSERT INTO public.users (id, full_name, email, password_hash, user_type, created_at)
 VALUES ('f7d2e9b8-31a4-4c5d-92e1-8b0f7a63c294', 'Administrador 2', 'admin@geac.com',
@@ -235,7 +242,9 @@ VALUES ('f7d2e9b8-31a4-4c5d-92e1-8b0f7a63c294', 'Administrador 2', 'admin@geac.c
        ('54307ac7-8117-42c3-abc2-a74b112979c3', 'professor3', 'professor3@test.com',
         '$2a$10$q0K2zMKAZ2w0XRTektFvcO1TiQ1IKFTSp.biRbH6W9.uL5IcFDrgG', 'PROFESSOR', NOW()),
        ('e6137fdc-6fc2-4776-8616-9e238c1b48a7', 'admin', 'admin@admin.com',
-        '$2a$10$/h/iWZLAhU4PfZmTew1nl.6xfNP4ymHEu5zSWXGhGIsce41x7p146', 'ADMIN', NOW());
+        '$2a$10$/h/iWZLAhU4PfZmTew1nl.6xfNP4ymHEu5zSWXGhGIsce41x7p146', 'ADMIN', NOW()),
+       ('7f1c6b11-39f4-4f75-b4ec-6e771c46c17c', 'organizer1', 'organizer1@test.com',
+        '$2a$10$MOljMoo4PYuoz4yzBJK8K.tW/2iBtWFcFUkZv8d5RuGfIMikJITDu', 'ORGANIZER', NOW());
 -- 50 CATEGORIAS
 INSERT INTO categories (name, description)
 VALUES ('hackathon', 'Competições intensivas de programação e inovação para solução de desafios.'),
@@ -384,6 +393,9 @@ VALUES ('a1111111-1111-1111-1111-111111111111', 'Departamento de Ciências da Co
        ('a4444444-4444-4444-4444-444444444444', 'Serviços de Carreira e Desenvolvimento',
         'career.services@university.edu'),
        ('a5555555-5555-5555-5555-555555555555', 'Departamento de Estudos Culturais', 'cultural.studies@university.edu');
+
+INSERT INTO public.organizer_members (organizer_id, user_id)
+VALUES ('a1111111-1111-1111-1111-111111111111', '7f1c6b11-39f4-4f75-b4ec-6e771c46c17c');
 
 --  LOCALIZAÇÕES
 INSERT INTO public.locations (name, street, number, neighborhood, city, state, zip_code, campus, reference_point,
