@@ -2,7 +2,7 @@ services:
   - name: geac-backend
     type: web
     runtime: docker
-    plan: starter
+    plan: free
     dockerContext: ./backend
     dockerfilePath: ./backend/Dockerfile
     buildFilter:
@@ -15,9 +15,13 @@ services:
       - key: SPRING_DATASOURCE_URL
         sync: false
       - key: SPRING_DATASOURCE_USERNAME
-        sync: false
+        fromDatabase:
+          name: geac-postgres
+          property: user
       - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
+        fromDatabase:
+          name: geac-postgres
+          property: password
       - key: MAIL_HOST
         sync: false
       - key: MAIL_USERNAME
@@ -28,7 +32,7 @@ services:
   - name: geac-frontend
     type: web
     runtime: docker
-    plan: starter
+    plan: free
     dockerContext: ./frontend
     dockerfilePath: ./frontend/Dockerfile
     buildFilter:
@@ -38,3 +42,9 @@ services:
     envVars:
       - key: NEXT_PUBLIC_API_URL
         sync: false
+
+databases:
+  - name: geac-postgres
+    plan: free
+    databaseName: geac
+    user: geac
