@@ -20,6 +20,7 @@ import br.com.geac.backend.aplication.dtos.response.MemberResponseDTO;
 import br.com.geac.backend.aplication.dtos.response.NotificationResponseDTO;
 import br.com.geac.backend.aplication.dtos.response.OrganizerResponseDTO;
 import br.com.geac.backend.aplication.dtos.response.PendingRequestResponseDTO;
+import br.com.geac.backend.aplication.dtos.response.RegistrationActionResponseDTO;
 import br.com.geac.backend.aplication.dtos.response.RegistrationResponseDTO;
 import br.com.geac.backend.aplication.dtos.response.RequirementsResponseDTO;
 import br.com.geac.backend.aplication.dtos.response.SpeakerResponseDTO;
@@ -212,13 +213,17 @@ class ControllersCoverageTest {
         when(presence.userIds()).thenReturn(List.of(userId));
         when(presence.attended()).thenReturn(true);
         when(service.getRegistrationsByEvent(eventId)).thenReturn(List.of(response));
+        when(service.getWaitingListByEvent(eventId)).thenReturn(List.of(response));
+        when(service.registerToEvent(eventId)).thenReturn(new RegistrationActionResponseDTO("CONFIRMED", "ok"));
 
         assertThat(controller.markAttendanceInBulk(eventId, presence).getStatusCode().value()).isEqualTo(204);
         assertThat(controller.getRegistrationsByEvent(eventId).getBody()).containsExactly(response);
+        assertThat(controller.getWaitingListByEvent(eventId).getBody()).containsExactly(response);
         assertThat(controller.registerToEvent(eventId).getStatusCode().value()).isEqualTo(201);
         assertThat(controller.cancelRegistration(eventId).getStatusCode().value()).isEqualTo(204);
 
         verify(service).markAttendanceInBulk(eventId, List.of(userId), true);
+        verify(service).getWaitingListByEvent(eventId);
         verify(service).registerToEvent(eventId);
         verify(service).cancelRegistration(eventId);
     }

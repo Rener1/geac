@@ -7,6 +7,7 @@ import br.com.geac.backend.aplication.mappers.EventMapper;
 import br.com.geac.backend.domain.entities.*;
 import br.com.geac.backend.domain.enums.DaysBeforeNotify;
 import br.com.geac.backend.domain.enums.EventStatus;
+import br.com.geac.backend.domain.enums.RegistrationStatus;
 import br.com.geac.backend.domain.enums.Role;
 import br.com.geac.backend.domain.exceptions.BadRequestException;
 import br.com.geac.backend.domain.exceptions.EventAlreadyExistsException;
@@ -176,9 +177,8 @@ class EventServiceTest {
     @Test
     @DisplayName("Deve retornar lista de eventos com sucesso")
     void getAllEvents_Success() {
-        List<Object[]> resultado = new ArrayList<>();
-        resultado.add(new Object[]{event, 5L});
-        when(eventRepository.findAllWithRegistrationCount()).thenReturn(resultado);
+        when(eventRepository.findAll()).thenReturn(List.of(event));
+        when(registrationRepository.countByEventIdAndStatus(event.getId(), RegistrationStatus.CONFIRMED)).thenReturn(5L);
         when(eventMapper.toResponseDTO(any(), any(), any())).thenReturn(eventResponse);
 
         List<EventResponseDTO> events = eventService.getAllEvents();
@@ -190,7 +190,7 @@ class EventServiceTest {
     @Test
     @DisplayName("Deve retornar lista vazia quando nao ha eventos")
     void getAllEvents_EmptyList() {
-        when(eventRepository.findAllWithRegistrationCount()).thenReturn(List.of());
+        when(eventRepository.findAll()).thenReturn(List.of());
 
         List<EventResponseDTO> events = eventService.getAllEvents();
 
@@ -348,7 +348,7 @@ class EventServiceTest {
                 new UsernamePasswordAuthenticationToken("principal-invalido", null, List.of()));
 
         when(eventRepository.findById(id)).thenReturn(Optional.of(event));
-        when(registrationRepository.countByEventIdAndStatus(id, "CONFIRMED")).thenReturn(2L);
+        when(registrationRepository.countByEventIdAndStatus(id, RegistrationStatus.CONFIRMED)).thenReturn(2L);
         when(eventMapper.toResponseDTO(any(), any(), any())).thenReturn(eventResponse);
 
         EventResponseDTO response = eventService.getEventById(id);
@@ -388,6 +388,40 @@ class EventServiceTest {
 
         assertThatThrownBy(() -> eventService.patchEvent(eventId, patch))
                 .isInstanceOf(EventAlreadyExistsException.class);
+    }
+
+    @Test
+    @DisplayName("Deve impedir capacidade menor que o numero de inscritos confirmados")
+    void patchEvent_MaxCapacityLowerThanConfirmed_ThrowsBadRequestException() {
+        User admin = new User();
+        admin.setId(UUID.randomUUID());
+        admin.setRole(Role.ADMIN);
+        setAuthentication(admin);
+        UUID eventId = event.getId();
+
+        EventPatchRequestDTO patch = new EventPatchRequestDTO(
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                3,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+
+        when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
+        when(registrationRepository.countByEventIdAndStatus(eventId, RegistrationStatus.CONFIRMED)).thenReturn(4L);
+
+        assertThatThrownBy(() -> eventService.patchEvent(eventId, patch))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("capacidade máxima");
     }
 
     // ==================== HELPERS ====================

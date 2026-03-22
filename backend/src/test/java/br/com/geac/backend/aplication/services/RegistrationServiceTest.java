@@ -1,8 +1,10 @@
 package br.com.geac.backend.aplication.services;
 
+import br.com.geac.backend.aplication.dtos.response.RegistrationActionResponseDTO;
 import br.com.geac.backend.aplication.dtos.response.RegistrationResponseDTO;
 import br.com.geac.backend.domain.entities.*;
 import br.com.geac.backend.domain.enums.EventStatus;
+import br.com.geac.backend.domain.enums.RegistrationStatus;
 import br.com.geac.backend.domain.enums.Role;
 import br.com.geac.backend.domain.exceptions.*;
 import br.com.geac.backend.infrastucture.repositories.*;
@@ -69,7 +71,7 @@ class RegistrationServiceTest {
         registration = new Registration();
         registration.setUser(student);
         registration.setEvent(event);
-        registration.setStatus("CONFIRMED");
+        registration.setStatus(RegistrationStatus.CONFIRMED);
         registration.setAttended(false);
     }
 
@@ -85,14 +87,12 @@ class RegistrationServiceTest {
         when(registrationRepository.existsByUserIdAndEventId(any(), any())).thenReturn(false);
         when(organizerMemberRepository.existsByOrganizerIdAndUserId(any(), any())).thenReturn(false);
         when(registrationRepository.countByEventIdAndStatus(any(), any())).thenReturn(10L);
-        when(eventRepository.save(any())).thenReturn(event);
-        when(registrationRepository.save(any())).thenReturn(registration);
 
-        assertThatCode(() -> registrationService.registerToEvent(eventId))
-                .doesNotThrowAnyException();
+        RegistrationActionResponseDTO response = registrationService.registerToEvent(eventId);
 
         verify(registrationRepository).save(any(Registration.class));
         verify(notificationService).notify(any(Notification.class));
+        assertThat(response.status()).isEqualTo(RegistrationStatus.CONFIRMED.name());
     }
 
     @Test
@@ -136,8 +136,8 @@ class RegistrationServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lancar excecao quando evento esta lotado")
-    void registerToEvent_MaxCapacity_ThrowsException() {
+    @DisplayName("Deve adicionar usuario na lista de espera quando evento esta lotado")
+    void registerToEvent_MaxCapacity_AddsUserToWaitingList() {
         setAuthentication(student);
         UUID eventId = event.getId();
         event.setMaxCapacity(10);
@@ -147,8 +147,13 @@ class RegistrationServiceTest {
         when(organizerMemberRepository.existsByOrganizerIdAndUserId(any(), any())).thenReturn(false);
         when(registrationRepository.countByEventIdAndStatus(any(), any())).thenReturn(10L);
 
-        assertThatThrownBy(() -> registrationService.registerToEvent(eventId))
-                .isInstanceOf(EventMaxCapacityAchievedException.class);
+        RegistrationActionResponseDTO response = registrationService.registerToEvent(eventId);
+
+        verify(registrationRepository).save(argThat(savedRegistration ->
+                savedRegistration.getStatus() == RegistrationStatus.WAITING_LIST
+        ));
+        assertThat(response.status()).isEqualTo(RegistrationStatus.WAITING_LIST.name());
+        assertThat(response.message()).contains("lista de espera");
     }
 
     @Test
@@ -161,7 +166,6 @@ class RegistrationServiceTest {
         when(eventRepository.findById(eventId)).thenReturn(Optional.of(event));
         when(registrationRepository.existsByUserIdAndEventId(any(), any())).thenReturn(false);
         when(organizerMemberRepository.existsByOrganizerIdAndUserId(any(), any())).thenReturn(false);
-        when(registrationRepository.countByEventIdAndStatus(any(), any())).thenReturn(5L);
 
         assertThatThrownBy(() -> registrationService.registerToEvent(eventId))
                 .isInstanceOf(EventNotAvailableException.class);
@@ -178,11 +182,10 @@ class RegistrationServiceTest {
         when(registrationRepository.existsByUserIdAndEventId(any(), any())).thenReturn(false);
         when(organizerMemberRepository.existsByOrganizerIdAndUserId(any(), any())).thenReturn(false);
         when(registrationRepository.countByEventIdAndStatus(any(), any())).thenReturn(5L);
-        when(eventRepository.save(any())).thenReturn(event);
-        when(registrationRepository.save(any())).thenReturn(registration);
 
-        assertThatCode(() -> registrationService.registerToEvent(eventId))
-                .doesNotThrowAnyException();
+        RegistrationActionResponseDTO response = registrationService.registerToEvent(eventId);
+
+        assertThat(response.status()).isEqualTo(RegistrationStatus.CONFIRMED.name());
     }
 
     // ==================== CANCEL REGISTRATION ====================
@@ -201,6 +204,49 @@ class RegistrationServiceTest {
 
         verify(registrationRepository).delete(registration);
         verify(notificationService).notify(any(Notification.class));
+    }
+
+    @Test
+    @DisplayName("Deve promover o primeiro da fila quando uma inscricao confirmada for cancelada")
+    void cancelRegistration_PromotesNextWaitingRegistration() {
+        setAuthentication(student);
+        UUID eventId = event.getId();
+
+        Registration waitingRegistration = new Registration();
+        waitingRegistration.setUser(admin);
+        waitingRegistration.setEvent(event);
+        waitingRegistration.setStatus(RegistrationStatus.WAITING_LIST);
+
+        when(registrationRepository.findByUserIdAndEventId(any(), any()))
+                .thenReturn(Optional.of(registration));
+        when(registrationRepository.findFirstByEventIdAndStatusOrderByRegistrationDateAsc(
+                eventId,
+                RegistrationStatus.WAITING_LIST
+        )).thenReturn(Optional.of(waitingRegistration));
+
+        registrationService.cancelRegistration(eventId);
+
+        assertThat(waitingRegistration.getStatus()).isEqualTo(RegistrationStatus.CONFIRMED);
+        verify(registrationRepository).save(waitingRegistration);
+        verify(notificationService, times(2)).notify(any(Notification.class));
+    }
+
+    @Test
+    @DisplayName("Nao deve promover fila quando cancelamento for de inscricao em espera")
+    void cancelRegistration_WaitingListCancellation_DoesNotPromote() {
+        setAuthentication(student);
+        UUID eventId = event.getId();
+        registration.setStatus(RegistrationStatus.WAITING_LIST);
+
+        when(registrationRepository.findByUserIdAndEventId(any(), any()))
+                .thenReturn(Optional.of(registration));
+
+        registrationService.cancelRegistration(eventId);
+
+        verify(registrationRepository, never()).findFirstByEventIdAndStatusOrderByRegistrationDateAsc(
+                any(),
+                eq(RegistrationStatus.WAITING_LIST)
+        );
     }
 
     @Test
@@ -239,7 +285,10 @@ class RegistrationServiceTest {
         setAuthentication(admin);
         when(organizerMemberRepository.existsByOrganizerIdAndUserId(any(), any())).thenReturn(true);
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
-        when(registrationRepository.findByEventId(event.getId())).thenReturn(List.of(registration));
+        when(registrationRepository.findByEventIdAndStatusOrderByRegistrationDateAsc(
+                event.getId(),
+                RegistrationStatus.CONFIRMED
+        )).thenReturn(List.of(registration));
 
         List<RegistrationResponseDTO> result = registrationService.getRegistrationsByEvent(event.getId());
 
@@ -262,11 +311,36 @@ class RegistrationServiceTest {
         setAuthentication(admin);
         when(organizerMemberRepository.existsByOrganizerIdAndUserId(any(), any())).thenReturn(true);
         when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
-        when(registrationRepository.findByEventId(event.getId())).thenReturn(List.of());
+        when(registrationRepository.findByEventIdAndStatusOrderByRegistrationDateAsc(
+                event.getId(),
+                RegistrationStatus.CONFIRMED
+        )).thenReturn(List.of());
 
         List<RegistrationResponseDTO> result = registrationService.getRegistrationsByEvent(event.getId());
 
         assertThat(result).isNotNull().isEmpty();
+    }
+
+    @Test
+    @DisplayName("Deve retornar fila de espera ordenada por data de inscricao")
+    void getWaitingListByEvent_Success() {
+        setAuthentication(admin);
+        Registration waitingRegistration = new Registration();
+        waitingRegistration.setUser(student);
+        waitingRegistration.setEvent(event);
+        waitingRegistration.setStatus(RegistrationStatus.WAITING_LIST);
+
+        when(organizerMemberRepository.existsByOrganizerIdAndUserId(any(), any())).thenReturn(true);
+        when(eventRepository.findById(event.getId())).thenReturn(Optional.of(event));
+        when(registrationRepository.findByEventIdAndStatusOrderByRegistrationDateAsc(
+                event.getId(),
+                RegistrationStatus.WAITING_LIST
+        )).thenReturn(List.of(waitingRegistration));
+
+        List<RegistrationResponseDTO> result = registrationService.getWaitingListByEvent(event.getId());
+
+        assertThat(result).singleElement().extracting(RegistrationResponseDTO::status)
+                .isEqualTo(RegistrationStatus.WAITING_LIST.name());
     }
 
     // ==================== MARK ATTENDANCE ====================

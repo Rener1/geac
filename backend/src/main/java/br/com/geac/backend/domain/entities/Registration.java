@@ -1,5 +1,6 @@
 package br.com.geac.backend.domain.entities;
 
+import br.com.geac.backend.domain.enums.RegistrationStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,8 +32,9 @@ public class Registration {
     @Column(nullable = false)
     private Boolean attended = false;
 
-    @Column(length = 20)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20, nullable = false)
+    private RegistrationStatus status = RegistrationStatus.CONFIRMED;
 
     private boolean notified = false;
 }

@@ -7,6 +7,7 @@ import br.com.geac.backend.aplication.dtos.request.EventRequestDTO;
 import br.com.geac.backend.aplication.mappers.EventMapper;
 import br.com.geac.backend.domain.entities.*;
 import br.com.geac.backend.domain.enums.EventStatus;
+import br.com.geac.backend.domain.enums.RegistrationStatus;
 import br.com.geac.backend.domain.enums.Role;
 import br.com.geac.backend.domain.exceptions.*;
 import br.com.geac.backend.infrastucture.repositories.*;
@@ -95,12 +96,9 @@ public class EventService {
 
     @Transactional(readOnly = true)
     public List<EventResponseDTO> getAllEvents() {
-        List<Object[]> results = eventRepository.findAllWithRegistrationCount();
-        return results.stream().map(result -> {
-            Event event = (Event) result[0];
-            Long inscritos = (Long) result[1];
-            return eventMapper.toResponseDTO(event, null, inscritos.intValue());
-        }).toList();
+        return eventRepository.findAll().stream()
+                .map(event -> eventMapper.toResponseDTO(event, null, getConfirmedRegistrationsCount(event.getId())))
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -111,9 +109,9 @@ public class EventService {
 
         return registrations.stream().map(reg -> {
             Event event = reg.getEvent();
-            Integer subscribes = (int) registrationRepository.countByEventIdAndStatus(event.getId(), "CONFIRMED");
+            Integer subscribes = getConfirmedRegistrationsCount(event.getId());
 
-            UserRegistrationContextResponseDTO context = new UserRegistrationContextResponseDTO(true, reg.getStatus(), reg.getAttended());
+            UserRegistrationContextResponseDTO context = new UserRegistrationContextResponseDTO(true, reg.getStatus().name(), reg.getAttended());
 
             return eventMapper.toResponseDTO(event, context, subscribes);
         }).toList();
@@ -122,7 +120,7 @@ public class EventService {
     @Transactional(readOnly = true)
     public EventResponseDTO getEventById(UUID id) {
         Event event = getEventByIdOrThrow(id);
-        Integer subscribes = (int) registrationRepository.countByEventIdAndStatus((id), "CONFIRMED");
+        Integer subscribes = getConfirmedRegistrationsCount(id);
 
         return eventMapper.toResponseDTO(event, getUserRegistrationContext(event.getId()), subscribes);
     }
@@ -132,6 +130,7 @@ public class EventService {
 
         Event event = getEventByIdOrThrow(id);
         validateEventOwnership(event);
+        validateCapacityChange(id, dto.maxCapacity());
         eventMapper.updateEventFromDto(dto, event);
 
         if (dto.speakers() != null) event.setSpeakers(resolveSpeakers(dto.speakers()));
@@ -164,7 +163,11 @@ public class EventService {
                 throw new EventAlreadyExistsException("Já existe outro evento com este título e horário nesta organização.");
             }
 
-        return eventMapper.toResponseDTO(eventRepository.save(event), getUserRegistrationContext(event.getId()));
+        return eventMapper.toResponseDTO(
+                eventRepository.save(event),
+                getUserRegistrationContext(event.getId()),
+                getConfirmedRegistrationsCount(event.getId())
+        );
 
     }
 
@@ -178,7 +181,7 @@ public class EventService {
             var registrationOpt = registrationRepository.findByUserIdAndEventId(user.getId(), eventId);
             if (registrationOpt.isPresent()) {
                 Registration reg = registrationOpt.get();
-                return new UserRegistrationContextResponseDTO(true, reg.getStatus(), reg.getAttended());
+                return new UserRegistrationContextResponseDTO(true, reg.getStatus().name(), reg.getAttended());
             }
         } catch (ClassCastException e) {
             // Prevenção caso o principal não seja do tipo User
@@ -227,8 +230,25 @@ public class EventService {
                 .toList();
 
         return eventRepository.findAllByOrganizerIdIn(orgsId)
-                .stream().map(a -> eventMapper.toResponseDTO(a, null))
+                .stream().map(a -> eventMapper.toResponseDTO(a, null, getConfirmedRegistrationsCount(a.getId())))
                 .toList();
+    }
+
+    private Integer getConfirmedRegistrationsCount(UUID eventId) {
+        return Math.toIntExact(registrationRepository.countByEventIdAndStatus(eventId, RegistrationStatus.CONFIRMED));
+    }
+
+    private void validateCapacityChange(UUID eventId, Integer requestedMaxCapacity) {
+        if (requestedMaxCapacity == null) {
+            return;
+        }
+
+        int confirmedRegistrations = getConfirmedRegistrationsCount(eventId);
+        if (requestedMaxCapacity < confirmedRegistrations) {
+            throw new BadRequestException(
+                    "A capacidade máxima não pode ser menor que o número de inscrições confirmadas (" + confirmedRegistrations + ")."
+            );
+        }
     }
 
     public List<Event> getReadyToNotifyEvents() {

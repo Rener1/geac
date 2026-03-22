@@ -1,6 +1,7 @@
 package br.com.geac.backend.infrastucture.repositories;
 
 import br.com.geac.backend.domain.entities.Registration;
+import br.com.geac.backend.domain.enums.RegistrationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -22,6 +23,8 @@ public interface RegistrationRepository extends JpaRepository<Registration, UUID
 
     List<Registration> findByEventId(UUID eventId);
 
+    List<Registration> findByEventIdAndStatusOrderByRegistrationDateAsc(UUID eventId, RegistrationStatus status);
+
     // Faz o UPDATE apenas nos usuários que vieram na lista, dentro do evento específico
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Registration r SET r.attended = :attended WHERE r.event.id = :eventId AND r.user.id IN :userIds")
@@ -35,11 +38,13 @@ public interface RegistrationRepository extends JpaRepository<Registration, UUID
 
     List<Registration> findByEventIdAndNotified(UUID eventId, boolean notified);
 
-    long countByEventIdAndStatus(UUID eventId, String status);
+    long countByEventIdAndStatus(UUID eventId, RegistrationStatus status);
 
     Optional<Registration> findByEventIdAndUserId(UUID eventId, UUID userId);
 
     Registration getByUserIdAndEventId(UUID userId, UUID eventId);
 
     List<Registration> findByUserId(UUID userId);
+
+    Optional<Registration> findFirstByEventIdAndStatusOrderByRegistrationDateAsc(UUID eventId, RegistrationStatus status);
 }

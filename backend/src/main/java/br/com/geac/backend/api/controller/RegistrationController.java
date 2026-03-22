@@ -1,6 +1,7 @@
 package br.com.geac.backend.api.controller;
 
 import br.com.geac.backend.aplication.dtos.response.RegistrationResponseDTO;
+import br.com.geac.backend.aplication.dtos.response.RegistrationActionResponseDTO;
 import br.com.geac.backend.aplication.dtos.request.PresenceRequestDTO;
 import br.com.geac.backend.aplication.services.RegistrationService;
 import jakarta.validation.Valid;
@@ -38,12 +39,19 @@ public class RegistrationController {
         return ResponseEntity.ok(list);
     }
 
+    @GetMapping("/event/{eventId}/waiting-list")
+    @PreAuthorize("hasAnyRole('PROFESSOR', 'ORGANIZER', 'ADMIN')")
+    public ResponseEntity<List<RegistrationResponseDTO>> getWaitingListByEvent(@PathVariable UUID eventId) {
+        List<RegistrationResponseDTO> list = registrationService.getWaitingListByEvent(eventId);
+        return ResponseEntity.ok(list);
+    }
+
     @PostMapping("/{eventId}/register")
-    public ResponseEntity<Void> registerToEvent(@PathVariable UUID eventId) {
+    public ResponseEntity<RegistrationActionResponseDTO> registerToEvent(@PathVariable UUID eventId) {
 
-        registrationService.registerToEvent(eventId);
+        RegistrationActionResponseDTO response = registrationService.registerToEvent(eventId);
 
-        return ResponseEntity.status(201).build();
+        return ResponseEntity.status(201).body(response);
     }
 
     @DeleteMapping("/{eventId}/cancel")

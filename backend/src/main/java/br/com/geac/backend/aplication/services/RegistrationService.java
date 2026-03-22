@@ -1,20 +1,22 @@
 package br.com.geac.backend.aplication.services;
 
+import br.com.geac.backend.aplication.dtos.response.RegistrationActionResponseDTO;
 import br.com.geac.backend.aplication.dtos.response.RegistrationResponseDTO;
 import br.com.geac.backend.domain.entities.Event;
 import br.com.geac.backend.domain.entities.Notification;
 import br.com.geac.backend.domain.entities.Registration;
 import br.com.geac.backend.domain.entities.User;
 import br.com.geac.backend.domain.enums.EventStatus;
+import br.com.geac.backend.domain.enums.RegistrationStatus;
 import br.com.geac.backend.domain.exceptions.*;
 import br.com.geac.backend.infrastucture.repositories.EventRepository;
+import br.com.geac.backend.infrastucture.repositories.OrganizerMemberRepository;
 import br.com.geac.backend.infrastucture.repositories.RegistrationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import br.com.geac.backend.infrastucture.repositories.OrganizerMemberRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -58,23 +60,29 @@ public class RegistrationService {
        validateOrganizerAccess(event);
 
         // 3. Busca as inscrições e converte para DTO
-        List<Registration> registrations = registrationRepository.findByEventId(eventId);
+        List<Registration> registrations = registrationRepository
+                .findByEventIdAndStatusOrderByRegistrationDateAsc(eventId, RegistrationStatus.CONFIRMED);
 
-        return registrations.stream()
-                .map(reg -> new RegistrationResponseDTO(
-                        reg.getUser().getId(),
-                        reg.getUser().getName(),
-                        reg.getUser().getEmail(),
-                        reg.getAttended(),
-                        reg.getStatus()
-                ))
-                .toList();
+        return mapToResponse(registrations);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RegistrationResponseDTO> getWaitingListByEvent(UUID eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException("Evento não encontrado."));
+
+        validateOrganizerAccess(event);
+
+        List<Registration> waitingList = registrationRepository
+                .findByEventIdAndStatusOrderByRegistrationDateAsc(eventId, RegistrationStatus.WAITING_LIST);
+
+        return mapToResponse(waitingList);
     }
     public List<Registration> getUnotifiedRegistrationsById(UUID eventId) {
         return registrationRepository.findByEventIdAndNotified(eventId,false);
     }
     @Transactional
-    public void registerToEvent(UUID eventId) {
+    public RegistrationActionResponseDTO registerToEvent(UUID eventId) {
 
         User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -89,33 +97,34 @@ public class RegistrationService {
             throw new MemberOfPromoterOrgException("Você não pode se inscrever no evento que sua organização está promovendo.");
         }
 
-        var subscribes = registrationRepository.countByEventIdAndStatus(eventId,"CONFIRMED");
-        if (subscribes >= event.getMaxCapacity()) {
-            throw new EventMaxCapacityAchievedException("Desculpe, este evento já atingiu a capacidade máxima de " + event.getMaxCapacity() + " participantes.");
-        }
         if((event.getStatus() != EventStatus.ACTIVE) && (event.getStatus() != EventStatus.UPCOMING)) {
             throw new EventNotAvailableException("O Evento que voce está tentando se inscrever ainda nao está disponivel ou já foi encerrado");
         }
 
-        eventRepository.save(event);
+        long confirmedRegistrations = registrationRepository.countByEventIdAndStatus(eventId, RegistrationStatus.CONFIRMED);
+        boolean hasAvailableSpots = confirmedRegistrations < event.getMaxCapacity();
 
         Registration registration = new Registration();
         registration.setUser(loggedUser);
         registration.setEvent(event);
-        registration.setStatus("CONFIRMED");
-
-        Notification notification = new Notification();
-        notification.setUser(loggedUser);
-        notification.setEvent(event);
-        notification.setTitle("Inscrição Confirmada");
-        notification.setMessage("Parabéns! Sua inscrição no evento '" + event.getTitle() + "' foi realizada com sucesso.");
-        notification.setType("SUBSCRIBE");
-        notification.setRead(false);
-        notification.setCreatedAt(LocalDateTime.now());
-
-        notificationService.notify(notification);
-        log.info("Registrado com sucesso"+ notification.getMessage());
+        registration.setStatus(hasAvailableSpots ? RegistrationStatus.CONFIRMED : RegistrationStatus.WAITING_LIST);
         registrationRepository.save(registration);
+
+        Notification notification = buildRegistrationNotification(loggedUser, event, registration.getStatus());
+        notificationService.notify(notification);
+        log.info("Registrado com sucesso {}", notification.getMessage());
+
+        if (registration.getStatus() == RegistrationStatus.WAITING_LIST) {
+            return new RegistrationActionResponseDTO(
+                    registration.getStatus().name(),
+                    "Evento lotado. Você foi adicionado(a) à lista de espera."
+            );
+        }
+
+        return new RegistrationActionResponseDTO(
+                registration.getStatus().name(),
+                "Parabéns! Sua inscrição no evento foi realizada com sucesso."
+        );
     }
 
     @Transactional
@@ -134,18 +143,10 @@ public class RegistrationService {
         Event event = registration.getEvent();
 
 
-        Notification notification = new Notification();
-        notification.setUser(loggedUser);
-        notification.setEvent(event);
-        notification.setTitle("Inscrição Cancelada");
-        notification.setMessage("Sua inscrição no evento '" + event.getTitle() + "' foi cancelada com sucesso. Uma vaga foi liberada.");
-        notification.setType("CANCEL");
-        notification.setRead(false);
-        notification.setCreatedAt(LocalDateTime.now());
-
-        notificationService.notify(notification);
+        notificationService.notify(buildCancellationNotification(loggedUser, event, registration.getStatus()));
 
         registrationRepository.delete(registration);
+        promoteNextWaitingRegistrationIfNeeded(event, registration.getStatus());
     }
 
     public void saveAll(List<Registration> registrations) {
@@ -165,5 +166,83 @@ public class RegistrationService {
 
     private User getLoggedUser() {
         return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
+    private List<RegistrationResponseDTO> mapToResponse(List<Registration> registrations) {
+        return registrations.stream()
+                .map(reg -> new RegistrationResponseDTO(
+                        reg.getUser().getId(),
+                        reg.getUser().getName(),
+                        reg.getUser().getEmail(),
+                        reg.getAttended(),
+                        reg.getStatus().name()
+                ))
+                .toList();
+    }
+
+    private Notification buildRegistrationNotification(User user, Event event, RegistrationStatus status) {
+        Notification notification = new Notification();
+        notification.setUser(user);
+        notification.setEvent(event);
+        notification.setType("SUBSCRIBE");
+        notification.setRead(false);
+        notification.setCreatedAt(LocalDateTime.now());
+
+        if (status == RegistrationStatus.WAITING_LIST) {
+            notification.setTitle("Adicionado à Lista de Espera");
+            notification.setMessage("O evento '" + event.getTitle() + "' está lotado. Você entrou na lista de espera.");
+            return notification;
+        }
+
+        notification.setTitle("Inscrição Confirmada");
+        notification.setMessage("Parabéns! Sua inscrição no evento '" + event.getTitle() + "' foi realizada com sucesso.");
+        return notification;
+    }
+
+    private void promoteNextWaitingRegistrationIfNeeded(Event event, RegistrationStatus canceledStatus) {
+        if (canceledStatus != RegistrationStatus.CONFIRMED) {
+            return;
+        }
+
+        registrationRepository.findFirstByEventIdAndStatusOrderByRegistrationDateAsc(
+                        event.getId(),
+                        RegistrationStatus.WAITING_LIST
+                )
+                .ifPresent(waitingRegistration -> {
+                    waitingRegistration.setStatus(RegistrationStatus.CONFIRMED);
+                    registrationRepository.save(waitingRegistration);
+                    notificationService.notify(buildPromotionNotification(waitingRegistration.getUser(), event));
+                });
+    }
+
+    private Notification buildPromotionNotification(User user, Event event) {
+        Notification notification = new Notification();
+        notification.setUser(user);
+        notification.setEvent(event);
+        notification.setTitle("Vaga Liberada");
+        notification.setMessage("Uma vaga foi liberada no evento '" + event.getTitle() + "' e sua inscrição foi confirmada.");
+        notification.setType("SUBSCRIBE");
+        notification.setRead(false);
+        notification.setCreatedAt(LocalDateTime.now());
+        return notification;
+    }
+
+    private Notification buildCancellationNotification(User user, Event event, RegistrationStatus status) {
+        Notification notification = new Notification();
+        notification.setUser(user);
+        notification.setEvent(event);
+        notification.setType("CANCEL");
+        notification.setRead(false);
+        notification.setCreatedAt(LocalDateTime.now());
+
+        if (status == RegistrationStatus.WAITING_LIST) {
+            notification.setTitle("Saída da Lista de Espera");
+            notification.setMessage("Você saiu da lista de espera do evento '" + event.getTitle() + "'.");
+            return notification;
+        }
+
+        notification.setTitle("Inscrição Cancelada");
+        notification.setMessage("Sua inscrição no evento '" + event.getTitle() + "' foi cancelada com sucesso. Uma vaga foi liberada.");
+        return notification;
     }
 }
