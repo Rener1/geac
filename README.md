@@ -109,10 +109,12 @@ Ferramentas & DevOps
 
 A plataforma está hospedada na nuvem utilizando a infraestrutura do Render com deploy automatizado via Docker. Pode aceder à versão em produção através dos links abaixo:
 
-- Acesso à Aplicação (Front-end): [https://geac-frontend.onrender.com]
-- Acesso à API (Back-end): [https://geac-backend.onrender.com]
+- Acesso à Aplicação (Front-end): [https://geac-frontend-ttod.onrender.com/](https://geac-frontend-ttod.onrender.com/)
+- Acesso à API (Back-end): [https://geac-backend-4psa.onrender.com/](https://geac-backend-4psa.onrender.com/)
 
-(Nota: Como a hospedagem utiliza o plano gratuito, o primeiro acesso após um período de inatividade pode demorar cerca de 50 segundos enquanto os servidores "acordam".)
+Aviso importante: a aplicação publicada só funcionará corretamente se o front-end e o back-end estiverem ativos ao mesmo tempo.
+
+Como os serviços estão hospedados no plano free do Render, eles podem ser suspensos após alguns minutos de inatividade. Quando isso acontecer, é necessário abrir as URLs publicadas e aguardar alguns minutos até que os serviços sejam reativados antes de testar o sistema.
 
 <br>
   
