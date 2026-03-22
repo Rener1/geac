@@ -31,6 +31,32 @@ export async function getEventRegistrationsAction(
   return res.json();
 }
 
+export async function getWaitingListAction(
+  eventId: string,
+): Promise<RegistrationResponseDTO[]> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  if (!token) throw new Error("Acesso negado. Faça login.");
+
+  const res = await fetch(`${API_URL}/registrations/event/${eventId}/waiting-list`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(
+      "Erro ao buscar lista de espera. Verifique se você é o organizador deste evento.",
+    );
+  }
+
+  return res.json();
+}
+
 export async function saveBulkAttendanceAction(
   eventId: string,
   userIds: string[],

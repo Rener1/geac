@@ -116,6 +116,7 @@ export default async function EventDetails({
 
   const spotsLeft = event.capacity - event.registered;
   const isFull = spotsLeft <= 0;
+  const isWaitingList = event.userRegistrationStatus === "WAITING_LIST";
   const isAllowedToEvaluate =
     event.status === EventStatus.COMPLETED &&
     event.isRegistered &&
@@ -195,10 +196,16 @@ export default async function EventDetails({
                   event,
                 )}
 
-                {event.isRegistered && (
+                {event.isRegistered && !isWaitingList && (
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800">
                     <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
                     Inscrito
+                  </span>
+                )}
+                {isWaitingList && (
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800">
+                    <Users className="w-3.5 h-3.5 mr-1.5" />
+                    Na Lista de Espera
                   </span>
                 )}
               </div>
@@ -412,7 +419,9 @@ export default async function EventDetails({
                       {event.registered} / {event.capacity} inscritos
                     </p>
                     <p className="text-sm text-zinc-500">
-                      {spotsLeft > 0
+                      {isWaitingList
+                        ? "Você está aguardando liberação de vaga"
+                        : spotsLeft > 0
                         ? `${spotsLeft} vagas restantes`
                         : "Nenhuma vaga restante"}
                     </p>
@@ -423,6 +432,7 @@ export default async function EventDetails({
               <EventRegistrationButton
                 eventId={event.id}
                 isRegistered={event.isRegistered}
+                userRegistrationStatus={event.userRegistrationStatus}
                 organizerEmail={event.organizerEmail}
                 isCanceled={isCanceled}
                 isPast={isPast}

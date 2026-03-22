@@ -18,9 +18,14 @@ const mockEvent: Event = {
   registered: 10,
   requirements: [],
   organizer: "Departamento de TI",
+  organizerEmail: "org@test.com",
   organizerType: "Departamento",
   tags: ["react", "test"],
   isRegistered: false,
+  onlineLink: "",
+  status: "UPCOMING" as Event["status"],
+  userRegistrationStatus: "",
+  userAttended: false,
 };
 
 const baseEvent: Event = {
@@ -38,9 +43,14 @@ const baseEvent: Event = {
   registered: 10,
   requirements: [],
   organizer: "Org",
+  organizerEmail: "org@test.com",
   organizerType: "Dep",
   tags: [],
   isRegistered: false,
+  onlineLink: "",
+  status: "UPCOMING" as Event["status"],
+  userRegistrationStatus: "",
+  userAttended: false,
 };
 
 describe("EventCard Component", () => {
@@ -67,10 +77,33 @@ describe("EventCard Component", () => {
     expect(screen.getByText("Inscrito")).toBeInTheDocument();
   });
 
+  it('deve mostrar o badge "Na fila de espera" quando o usuario estiver aguardando vaga', () => {
+    const waitingListEvent = {
+      ...mockEvent,
+      isRegistered: true,
+      userRegistrationStatus: "WAITING_LIST",
+    };
+    render(<EventCard event={waitingListEvent} />);
+
+    expect(screen.getByText("Na fila de espera")).toBeInTheDocument();
+    expect(screen.queryByText("Inscrito")).not.toBeInTheDocument();
+  });
+
   it('NÃO deve mostrar o badge "Inscrito" quando a prop isRegistered for false', () => {
     render(<EventCard event={mockEvent} />);
 
     expect(screen.queryByText("Inscrito")).not.toBeInTheDocument();
+  });
+
+  it('deve mostrar o badge "Esgotado" quando nao houver mais vagas', () => {
+    const soldOutEvent = {
+      ...baseEvent,
+      capacity: 2,
+      registered: 2,
+    };
+    render(<EventCard event={soldOutEvent} />);
+
+    expect(screen.getByText("Esgotado")).toBeInTheDocument();
   });
 
   it.each([

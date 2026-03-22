@@ -4,6 +4,11 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { API_URL } from "./configs";
 
+interface RegistrationActionResult {
+  status: string;
+  message: string;
+}
+
 export async function registerForEventAction(eventId: string) {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
@@ -27,8 +32,13 @@ export async function registerForEventAction(eventId: string) {
     );
   }
 
+  const data = (await res.json()) as RegistrationActionResult;
+
   revalidatePath(`/events/${eventId}`);
+  revalidatePath(`/events/${eventId}/waiting-list`);
   revalidatePath("/events");
+
+  return data;
 }
 
 export async function cancelRegistrationAction(eventId: string) {
@@ -56,5 +66,6 @@ export async function cancelRegistrationAction(eventId: string) {
   }
 
   revalidatePath(`/events/${eventId}`);
+  revalidatePath(`/events/${eventId}/waiting-list`);
   revalidatePath("/events");
 }

@@ -8,7 +8,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: Readonly<EventCardProps>) {
-  const spotsLeft = event.capacity - event.registered;
+  const spotsLeft = Math.max(event.capacity - event.registered, 0);
   const isFewSpots = spotsLeft < 20 && spotsLeft > 0;
 
   const dateObj = new Date(event.date + "T00:00:00");
@@ -34,6 +34,9 @@ export function EventCard({ event }: Readonly<EventCardProps>) {
   const isPastDate = event.date < todayStr;
   const isPastTime = event.date === todayStr && event.endTime < currentTimeStr;
   const isPast = isPastDate || isPastTime;
+  const isWaitingList = event.userRegistrationStatus === "WAITING_LIST";
+  const isConfirmedRegistration = event.isRegistered && !isWaitingList;
+  const isSoldOut = !isPast && spotsLeft === 0 && !event.isRegistered;
 
   const getRegistrationBadge = (): JSX.Element | null => {
     const styles = {
@@ -42,20 +45,28 @@ export function EventCard({ event }: Readonly<EventCardProps>) {
       past: "px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-500 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700 ml-2",
       registered:
         "px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 ml-2",
+      soldOut:
+        "px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800 ml-2",
+      waitingList:
+        "px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800 ml-2",
     };
 
     if (event.status === EventStatus.CANCELLED) {
       return <span className={styles.cancelled}>Cancelado</span>;
     }
 
-    if (!isPast && !event.isRegistered) {
+    if (!isPast && !event.isRegistered && !isSoldOut) {
       return null;
     }
 
     return (
       <>
         {isPast && <span className={styles.past}>Evento já realizado</span>}
-        {event.isRegistered && (
+        {isSoldOut && <span className={styles.soldOut}>Esgotado</span>}
+        {isWaitingList && (
+          <span className={styles.waitingList}>Na fila de espera</span>
+        )}
+        {isConfirmedRegistration && (
           <span className={styles.registered}>Inscrito</span>
         )}
       </>

@@ -7,11 +7,13 @@ import {
   cancelRegistrationAction,
 } from "@/app/actions/registrationActions";
 import Link from "next/link";
+import { ListOrdered } from "lucide-react";
 import { OrganizerResponseDTO } from "@/types/organizer";
 
 interface EventRegistrationButtonProps {
   eventId: string;
   isRegistered: boolean;
+  userRegistrationStatus: string;
   organizerEmail: string;
   isCanceled: boolean;
   isPast: boolean;
@@ -23,6 +25,7 @@ interface EventRegistrationButtonProps {
 export function EventRegistrationButton({
   eventId,
   isRegistered,
+  userRegistrationStatus,
   organizerEmail,
   isCanceled,
   isPast,
@@ -32,6 +35,7 @@ export function EventRegistrationButton({
 }: Readonly<EventRegistrationButtonProps>) {
   const [isLoading, setIsLoading] = useState(false);
   const { isAuthenticated } = useAuth();
+  const isWaitingList = userRegistrationStatus === "WAITING_LIST";
 
   const isOrganizer = organizers.some(
     (org) => org.contactEmail === organizerEmail,
@@ -53,29 +57,52 @@ export function EventRegistrationButton({
             Evento Cancelado
           </button>
         ) : (
-          <Link
-            href={`/events/${eventId}/presence`}
-            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-center transition-colors shadow-lg shadow-blue-600/20"
-          >
-            📋 Gerenciar Presenças
-          </Link>
+          <>
+            <Link
+              href={`/events/${eventId}/presence`}
+              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-center transition-colors shadow-lg shadow-blue-600/20"
+            >
+              📋 Gerenciar Presenças
+            </Link>
+            <Link
+              href={`/events/${eventId}/waiting-list`}
+              className="w-full py-3 px-4 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-medium rounded-lg text-center border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2"
+            >
+              <ListOrdered className="w-4 h-4" />
+              Ver Lista de Espera
+            </Link>
+          </>
         )}
       </div>
     );
   }
 
   const handleAction = async () => {
-    setIsLoading(true);
-
     try {
       if (isRegistered) {
-        // Chama a Server Action de Cancelamento
+        const shouldCancel = window.confirm(
+          isWaitingList
+            ? "Deseja sair da lista de espera deste evento?"
+            : "Deseja cancelar sua inscrição neste evento?",
+        );
+
+        if (!shouldCancel) {
+          return;
+        }
+      }
+
+      setIsLoading(true);
+
+      if (isRegistered) {
         await cancelRegistrationAction(eventId);
-        alert("Inscrição cancelada com sucesso! A vaga foi liberada.");
+        alert(
+          isWaitingList
+            ? "Você saiu da lista de espera com sucesso."
+            : "Inscrição cancelada com sucesso! A vaga foi liberada.",
+        );
       } else {
-        // Chama a Server Action de Inscrição
-        await registerForEventAction(eventId);
-        alert("Inscrição realizada com sucesso!");
+        const result = await registerForEventAction(eventId);
+        alert(result.message);
       }
     } catch (error) {
       alert(
@@ -120,17 +147,6 @@ export function EventRegistrationButton({
     );
   }
 
-  if (isFull && !isRegistered) {
-    return (
-      <button
-        disabled
-        className="w-full py-3 px-4 bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 rounded-md font-medium cursor-not-allowed"
-      >
-        Vagas Esgotadas
-      </button>
-    );
-  }
-
   if (isRegistered) {
     return (
       <button
@@ -138,7 +154,11 @@ export function EventRegistrationButton({
         disabled={isLoading}
         className="w-full py-3 px-4 bg-white dark:bg-zinc-900 text-red-600 border border-zinc-200 dark:border-zinc-700 font-medium rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors disabled:opacity-50"
       >
-        {isLoading ? "Processando..." : "Cancelar Inscrição"}
+        {isLoading
+          ? "Processando..."
+          : isWaitingList
+            ? "Sair da Lista de Espera"
+            : "Cancelar Inscrição"}
       </button>
     );
   }
@@ -149,7 +169,11 @@ export function EventRegistrationButton({
       disabled={isLoading}
       className="w-full py-3 px-4 bg-zinc-900 dark:bg-white text-white dark:text-black font-medium rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors shadow-lg shadow-zinc-900/10 disabled:opacity-50"
     >
-      {isLoading ? "Processando..." : "Inscrever-se no Evento"}
+      {isLoading
+        ? "Processando..."
+        : isFull
+          ? "Entrar na Lista de Espera"
+          : "Inscrever-se no Evento"}
     </button>
   );
 }

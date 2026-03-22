@@ -27,6 +27,7 @@ import {
   XCircle,
   Clock,
   AlertTriangle,
+  ListOrdered,
 } from "lucide-react";
 
 interface EventManageContentProps {
@@ -442,6 +443,13 @@ export default function EventManageContent({
                           >
                             <Eye className="w-4 h-4" />
                           </Link>
+                          <Link
+                            href={`/events/${event.id}/waiting-list`}
+                            className="p-2 text-zinc-400 hover:text-violet-600 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg transition-colors"
+                            title="Ver lista de espera"
+                          >
+                            <ListOrdered className="w-4 h-4" />
+                          </Link>
                           {event.status === "COMPLETED" && (
                             <Link
                               href={`/events/${event.id}/feedback`}
@@ -539,6 +547,13 @@ export default function EventManageContent({
                     >
                       <Eye className="w-3.5 h-3.5" />
                       Ver
+                    </Link>
+                    <Link
+                      href={`/events/${event.id}/waiting-list`}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-900/20 hover:bg-violet-100 dark:hover:bg-violet-900/30 rounded-lg transition-colors"
+                    >
+                      <ListOrdered className="w-3.5 h-3.5" />
+                      Lista
                     </Link>
                     {event.status === "COMPLETED" && (
                       <Link
