@@ -159,6 +159,7 @@ CREATE TABLE registrations
     id                UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     attended          BOOLEAN          DEFAULT FALSE,
     notified          BOOLEAN          DEFAULT FALSE,
+    status            VARCHAR(20)      NOT NULL DEFAULT 'CONFIRMED' CHECK (status IN ('CONFIRMED', 'WAITING_LIST')),
     registration_date TIMESTAMP        DEFAULT NOW(),
     user_id           UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
     event_id          UUID NOT NULL REFERENCES events (id) ON DELETE CASCADE,
@@ -545,6 +546,12 @@ VALUES ('e153c21a-d628-46ef-b838-b66d4758b966', 'a1111111-1111-1111-1111-1111111
         'Explore o mundo da tecnologia blockchain, mercados de criptomoedas e finanças descentralizadas...',
         'https://example.com/conferencia-blockchain', '2026-03-22 10:00:00.000000', '2026-03-22 16:00:00.000000', 6,
         150,
+        'upcoming', NOW()),
+       ('e9999999-d628-46ef-b838-b66d4758b966', 'a1111111-1111-1111-1111-111111111111', 6, 1,
+        'Oficina de Docker - Evento Lotado',
+        'Evento de teste com capacidade reduzida para validar bloqueio de vagas e lista de espera.',
+        'https://example.com/oficina-docker-lotado', '2026-04-10 14:00:00.000000', '2026-04-10 16:00:00.000000', 2,
+        2,
         'upcoming', NOW());
 -- Insert event tags
 INSERT INTO public.event_tags (event_id, tag_id)
@@ -642,3 +649,9 @@ VALUES -- Evento 1 (Inteligência Artificial)
        ('e8888888-d628-46ef-b838-b66d4758b966', 10),
        ('e8888888-d628-46ef-b838-b66d4758b966', 11),
        ('e8888888-d628-46ef-b838-b66d4758b966', 12);
+
+INSERT INTO public.registrations (id, attended, notified, status, registration_date, user_id, event_id)
+VALUES ('a9999999-d628-46ef-b838-b66d4758b966', FALSE, FALSE, 'CONFIRMED', '2026-03-01 09:00:00.000000',
+        'be89dede-00f2-48eb-880b-c9b728ce5bfc', 'e9999999-d628-46ef-b838-b66d4758b966'),
+       ('b9999998-d628-46ef-b838-b66d4758b966', FALSE, FALSE, 'CONFIRMED', '2026-03-01 09:05:00.000000',
+        'b82120cf-41a7-406a-b52d-259cdbef3041', 'e9999999-d628-46ef-b838-b66d4758b966');
