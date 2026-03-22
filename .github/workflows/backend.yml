@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
   push:
     branches: ["main"]
-    paths: ["backend/**"] 
+    paths: ["backend/**", ".github/workflows/backend.yml"]
   pull_request:
     types: [opened, synchronize, reopened]
     branches: ["main"]
-    paths: ["backend/**"]
+    paths: ["backend/**", ".github/workflows/backend.yml"]
 
 defaults:
   run:
@@ -38,22 +38,15 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - name: Iniciar Base de Dados
-        run: docker compose up -d
-
-      - name: Aguardar Base de Dados
-        run: sleep 30
-  
       - name: Dar permissão de execução para o Maven Wrapper
         run: chmod +x mvnw
 
       - name: Build, Testes e Sonar Analysis
-        continue-on-error: true
         working-directory: ./backend
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar -Dsonar.projectKey=GestaoDeEventosAcademicosECulturais_geac -Dspring.profiles.active=test -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+        run: ./mvnw -B -Dspring.profiles.active=test -Dsonar.projectKey=GestaoDeEventosAcademicosECulturais_geac -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml verify org.sonarsource.scanner.maven:sonar-maven-plugin:5.5.0.6356:sonar
       
       - name: Validar Relatório de Cobertura
         run: test -f target/site/jacoco/jacoco.xml
