@@ -183,7 +183,7 @@ public class EventService {
                 Registration reg = registrationOpt.get();
                 return new UserRegistrationContextResponseDTO(true, reg.getStatus().name(), reg.getAttended());
             }
-        } catch (ClassCastException e) {
+        } catch (ClassCastException _) {
             // Prevenção caso o principal não seja do tipo User
         }
         return new UserRegistrationContextResponseDTO(false, null, false);

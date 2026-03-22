@@ -1,6 +1,7 @@
 package br.com.geac.backend.aplication.services;
 
 import br.com.geac.backend.domain.entities.User;
+import br.com.geac.backend.domain.exceptions.TokenGenerationException;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
@@ -30,7 +31,7 @@ public class TokenService {
                     .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
         } catch (JWTCreationException exception) {
-            throw new RuntimeException("Erro ao gerar token", exception);
+            throw new TokenGenerationException("Erro ao gerar token", exception);
         }
     }
 
@@ -42,7 +43,7 @@ public class TokenService {
                     .build()
                     .verify(token)
                     .getSubject();
-        } catch (JWTVerificationException exception) {
+        } catch (JWTVerificationException _) {
             return "";
         }
     }

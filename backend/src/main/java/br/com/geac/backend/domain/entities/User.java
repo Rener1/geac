@@ -19,6 +19,10 @@ import java.util.UUID;
 @Setter
 @Table(name = "users")
 public class User implements UserDetails {
+    private static final String ROLE_ADMIN_AUTHORITY = "ROLE_ADMIN";
+    private static final String ROLE_PROFESSOR_AUTHORITY = "ROLE_PROFESSOR";
+    private static final String ROLE_STUDENT_AUTHORITY = "ROLE_STUDENT";
+    private static final String ROLE_ORGANIZER_AUTHORITY = "ROLE_ORGANIZER";
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -43,25 +47,25 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (this.role == Role.ADMIN) {
-            return List.of(
-                    new SimpleGrantedAuthority("ROLE_ADMIN"),
-                    new SimpleGrantedAuthority("ROLE_PROFESSOR"),
-                    new SimpleGrantedAuthority("ROLE_STUDENT"),
-                    new SimpleGrantedAuthority("ROLE_ORGANIZER")
+            return createAuthorities(
+                    ROLE_ADMIN_AUTHORITY,
+                    ROLE_PROFESSOR_AUTHORITY,
+                    ROLE_STUDENT_AUTHORITY,
+                    ROLE_ORGANIZER_AUTHORITY
             );
         } else if (this.role == Role.ORGANIZER) {
-            return List.of(
-                    new SimpleGrantedAuthority("ROLE_STUDENT"),
-                    new SimpleGrantedAuthority("ROLE_ORGANIZER")
-            );
+            return createAuthorities(ROLE_STUDENT_AUTHORITY, ROLE_ORGANIZER_AUTHORITY);
         } else if (this.role == Role.PROFESSOR) {
-            return List.of(
-                    new SimpleGrantedAuthority("ROLE_PROFESSOR"),
-                    new SimpleGrantedAuthority("ROLE_STUDENT")
-            );
+            return createAuthorities(ROLE_PROFESSOR_AUTHORITY, ROLE_STUDENT_AUTHORITY);
         } else {
-            return List.of(new SimpleGrantedAuthority("ROLE_STUDENT"));
+            return createAuthorities(ROLE_STUDENT_AUTHORITY);
         }
+    }
+
+    private List<SimpleGrantedAuthority> createAuthorities(String... roles) {
+        return List.of(roles).stream()
+                .map(SimpleGrantedAuthority::new)
+                .toList();
     }
 
     @Override
