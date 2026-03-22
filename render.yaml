@@ -1,0 +1,40 @@
+services:
+  - name: geac-backend
+    type: web
+    runtime: docker
+    plan: starter
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    buildFilter:
+      paths:
+        - backend/**
+        - render.yaml
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+
+  - name: geac-frontend
+    type: web
+    runtime: docker
+    plan: starter
+    dockerContext: ./frontend
+    dockerfilePath: ./frontend/Dockerfile
+    buildFilter:
+      paths:
+        - frontend/**
+        - render.yaml
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
